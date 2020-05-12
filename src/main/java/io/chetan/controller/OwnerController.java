@@ -300,19 +300,14 @@ public class OwnerController
 			    					  System.out.println("\n createdPG.getPgId() \n"+createdPG.getPgId());
 			    					  
 			    					  owner.setMyPG(createdPG.getPgId());
-			    					  // display test owner here to check mypg updted to db or not
-			    				  List<Owner> ownersList = ownerService.findByPhoneNumber(owner.getPhoneNumber());
-			    				  Owner testOwner  = null;
-			    				  for(Owner ow : ownersList)
-			    				  {
-			    					 if(ow.getPhoneNumber().equals(owner.getPhoneNumber()))
-			    					 {
-			    						 testOwner = ow ;
-			    						 break;
-			    					 }
-			    				  }
-			    				  System.out.println("\ntestOwner for Mypg has a \n = "+testOwner);
-			    				  System.out.println("\n testOwner.getMyPG() = \n"+testOwner.getMyPG());
+						/*
+						 * // display test owner here to check mypg updted to db or not List<Owner>
+						 * ownersList = ownerService.findByPhoneNumber(owner.getPhoneNumber()); Owner
+						 * testOwner = null; for(Owner ow : ownersList) {
+						 * if(ow.getPhoneNumber().equals(owner.getPhoneNumber())) { testOwner = ow ;
+						 * break; } } System.out.println("\ntestOwner for Mypg has a \n = "+testOwner);
+						 * System.out.println("\n testOwner.getMyPG() = \n"+testOwner.getMyPG());
+						 */
 			    				  
 			    				 //update owner to db so that owner will have mypg
 			    					Owner updatedOwner = ownerService.updateOwner(owner); 
