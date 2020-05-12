@@ -1,0 +1,105 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>OH</title>
+<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+
+<!-- <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css" /> -->
+
+</head>
+
+
+
+<body>
+
+<div th:fragment="oh"> 
+
+<table align="center" border="5" bordercolor="maroon">
+
+<tr>
+
+<td>
+<a href="back">HOME</a>
+</td>
+
+<td>
+ <button >IN-MATES
+      <i class="fa fa-caret-down"></i>
+    </button>
+
+<a href="openAddInMateView.owner">ADD IN-MATE</a>
+	  <a href="viewAllInMates.owner">VIEW IN-MATE</a>    
+</td>
+
+<td>
+
+ <button class="dropbtn">ROOMS 
+      <i class="fa fa-caret-down"></i>
+    </button>
+
+	 <a href="openAddARoom.owner">ADD ROOM</a>
+      <a href="viewRooms.owner">VIEW ROOMS</a>
+</td>
+
+
+
+<td>
+ <button class="dropbtn">RENT
+      <i class="fa fa-caret-down"></i>
+    </button>
+
+<a href="viewDues.owner">VIEW ALL DUES</a>
+</td>
+
+
+
+
+
+<td>
+  <button class="dropbtn">COMPLAINT-BOX
+      <i class="fa fa-caret-down"></i>
+    </button>
+
+      <a href="openComplaintBox.owner">OPEN COMPLAINT-BOX</a>
+</td>
+
+
+
+<td>
+   <button class="dropbtn">MyPG
+      <i class="fa fa-caret-down"></i>
+    </button>
+
+    <a href="viewPGDetails.owner">VIEW PG DETAILS</a>
+      <a href="openViewAndEditPGDetails.owner">EDIT PG DETAILS</a>
+</td>
+
+
+<td rowspan="3">
+   <button class="dropbtn">ME
+      <i class="fa fa-caret-down"></i>
+
+    </button>
+     <a href="viewOwnerDetails.owner">SHOW MY DETAILS</a>
+      <a href="openEditOwnerDetails.owner">EDIT MY DETAILS</a>
+</td>
+
+<td>
+   <a href="logOut">LOG-OUT</a>
+</td>
+
+</tr>
+
+
+</table>
+
+
+
+
+
+
+
+</div>
+
+</body>
+</html> 

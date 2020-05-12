@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Chetan Thymleaf</title>
+</head>
+<body>
+<h1>Cretae user</h1>
+<form action="#" th:action="@{/user2/createUser}" th:object="${user}" method="POST"> 
+<table>
+
+<tr>
+
+<td>USER ID</td>
+<td>
+
+<input type="text" th:field="*{userId}"/>
+<label th:if="${#fields.hasErrors('userId')}"  th:class="'error'">User id s mandaotory </label>
+</td>
+
+</tr>
+
+<tr>
+<td>USER NAme</td>
+<td>
+
+<input type="text" th:field="*{userName}"/>
+<label th:if="${#fields.hasErrors('userName')}" th:text="#{error.user.name}" th:class="'error'">Enter userName</label>
+</td>
+
+</tr>
+
+<tr>
+<td>gender</td>
+<td>
+
+<input type="radio" th:field="*{gender}" value="Male"/><label>MALE</label>
+<input type="radio" th:field="*{gender}" value="Female"/><label>FeMALE</label>
+<label th:if="${#fields.hasErrors('gender')}" th:text="#{error.user.gender}"  th:class="'error'">selcet gender</label>
+</td>
+
+</tr>
+
+<tr>
+<td>married ?</td>
+<td>
+
+<input type="checkbox" th:field="*{married}"/>
+</td>
+</tr>
+
+<tr>
+<td>Profile</td>
+<td>
+<select th:field="*{profile}">
+   <option th:each="profile : ${allProfiles}" th:value="${profile}" th:text="${profile}"></option>
+</select>
+
+</td>
+</tr>
+
+<tr>
+<td colspan="2">
+<input type="submit" th:value="submit"/>
+<input type="reset" th:value="reset"/>
+</td>
+</tr>
+
+
+</table>
+</form>
+</body>
+</html>

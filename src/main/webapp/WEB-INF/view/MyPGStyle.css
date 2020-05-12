@@ -1,0 +1,65 @@
+body
+ {
+    background-color: white;
+}
+
+p
+{
+	color: red;
+	font-family:monospace;
+	
+}
+h1 
+{
+    color: maroon;
+    margin-left: 20px;
+}
+h2
+ {
+    color: Tomato;
+    margin-left: 20px;
+}
+
+h3
+ {
+    color: green;
+    margin-left: 20px;
+}
+h4
+ {
+    color: orange;
+    margin-left: 20px;
+}
+h5
+ {
+    color: MediumSeaGreen;
+    margin-left: 20px;
+}
+h6
+ {
+    color: maroon;
+    margin-left: 20px;
+}
+.button 
+{
+     background-color: maroon;
+    border: none;
+    color: white;
+    padding: 10px 22px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 1px;
+    cursor: pointer;
+	 
+ 
+}
+.division
+{
+	  background-color: maroon;
+	  height:5px;
+	 margin: 0px ;
+}
+
+

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Welcome PAGE</title>
+</head>
+<body>
+<!-- <%@ include file="WelcomeHeader.html" %> -->
+<!--  th:insert & th:replace both work for header -->
+<div th:replace="WelcomeHeader :: header"></div>
+<p style=" font-family:monospace;  font-size: 70pt; " align="center"   >MyPG</p>
+<div class="division">
+</div>
+<h1 ><marquee th:text="${signOutMessage}"></marquee> </h1>             
+
+
+
+<h4 align="center" th:text="${loginErrorMessage }"></h4>
+
+<h4 align="center" th:text="${errorMessage }"></h4>
+<table align="center" border="2">
+<tr>
+<td>
+<s:form action="logIn" method="POST" >
+<p  >PHONE NUMBER :<input  type="text" name="phoneNumber" value="${phoneNumber }"/>
+
+</p>
+                        
+<p  >PASSWORD &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :<input type="password" name="password" />
+
+</p>
+
+<p align="center"><input type="submit" class="button" value='LOG IN' />
+</p>
+</s:form>
+</td>
+</tr>
+</table>
+
+
+<h6 ><marquee th:text="${SuccessMessage }"></marquee> </h6>
+
+<!--  th:insert & th:replace both work for footer -->
+
+<div th:insert="WelcomeFooter :: WelcomeFooter"></div>
+</body>
+</html>
+

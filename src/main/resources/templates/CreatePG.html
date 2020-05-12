@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+
+<head>
+<meta charset="UTF-8">
+<title>CreatePG</title>
+</head>
+
+
+<body>
+<h3>Congratulations you have successfully registered as a PG owner</h3>
+<pre>
+Note :
+You have to complete this step to create your PG registration
+to which you want to become owner 
+else your registration will be auto-cancelled
+</pre>
+
+
+<h1 align="center">ALL FIELDS ARE MANDATORY </h1>
+
+<h5 th:text="${duplicatePGErrorMessage }"></h5>
+
+<div align="center">
+<h4 th:text="${houseNumberErrorMessage }"></h4>
+<h4 th:text="${streetErrorMessage }"></h4>
+<h4 th:text="${districtErrorMessage }"></h4>
+<h4 th:text="${stateErrorMessage }"></h4>
+<h4 th:text="${countryErrorMessage }"></h4>
+<h4 th:text="${pinErrorMessage }"></h4>
+</div>
+
+
+<form action="#" th:action="@{/mypg/createPG}" th:object="${pg}" method="POST"> 
+<table align="center" border="0" bordercolor="maroon">
+<tr>
+<td>
+PG NAME
+</td>
+<td>
+
+
+<input type="text" th:field="*{name}"/>       
+<label th:if="${#fields.hasErrors('name')}" th:errors="*{name}"> </label>
+</td>
+</tr>
+
+<tr>
+<td colspan="2" align="center" >ADDRESS  
+</td>
+</tr>
+
+<tr>
+<td>
+HOUSE-NUMBER  
+</td>
+
+<td>
+<!-- <input type="text" th:field="*{address}"/> -->
+<!-- <label th:if="${#fields.hasErrors('address')}"  th:errors="*{address}" > </label> -->
+
+
+<input type="text" th:field="*{address.houseNumber}"/>
+<label th:if="${#fields.hasErrors('address.houseNumber')}"  th:errors="*{address.houseNumber}" > </label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+STREET  
+</td>
+
+<td>
+<input type="text" th:field="*{address.street}"/>
+<label th:if="${#fields.hasErrors('address.street')}"  th:errors="*{address.street}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+DISTRICT
+</td>
+
+<td>
+<input type="text" th:field="*{address.disrtict}"/>
+<label th:if="${#fields.hasErrors('address.disrtict')}"  th:errors="*{address.disrtict}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+STATE  
+</td>
+
+<td>
+<input type="text" th:field="*{address.state}"/>
+<label th:if="${#fields.hasErrors('address.state')}"  th:errors="*{address.state}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+COUNTRY 
+</td>
+
+<td>
+<input type="text" th:field="*{address.country}"/>
+<label th:if="${#fields.hasErrors('address.country')}"  th:errors="*{address.country}"> </label>
+
+</td>
+
+<tr>
+<td>
+PIN
+</td>
+
+<td>
+<input type="text" th:field="*{address.pin}"/>
+<label th:if="${#fields.hasErrors('address.pin')}"  th:errors="*{address.pin}"> </label>
+</td>
+</tr>
+
+<tr>
+<td colspan="2" align="center">
+<input type="submit" th:value="submit"/>
+<input type="reset" th:value="reset"/>
+</td>
+</tr>
+
+</table>
+
+</form>
+
+</body>
+</html>

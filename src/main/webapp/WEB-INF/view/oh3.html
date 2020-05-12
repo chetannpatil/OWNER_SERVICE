@@ -1,0 +1,87 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>OwnerHeader</title>
+     <link rel="stylesheet" type="text/css" href="/css/oh.css">
+<!--      <link rel="stylesheet" type="text/css" href="/WEB-INF/classes/static/css/oh.css"> -->
+</head>
+
+
+
+<body>
+
+<!-- <div th:fragment="Oheader" > -->
+<div th:fragment="oh"> 
+ 
+<div class="navbar">
+  <a href="back">HOME</a>
+  
+  <div class="dropdown">
+    <button class="dropbtn">IN-MATES
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+	<a href="openAddInMateView.owner">ADD IN-MATE</a>
+	  <a href="viewAllInMates.owner">VIEW IN-MATE</a>      
+     </div>
+  </div> 
+
+   <div class="dropdown">
+    <button class="dropbtn">ROOMS 
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+	 <a href="openAddARoom.owner">ADD ROOM</a>
+      <a href="viewRooms.owner">VIEW ROOMS</a>
+      </div>
+
+  </div> 
+
+
+
+      <div class="dropdown">
+    <button class="dropbtn">RENT
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <a href="viewDues.owner">VIEW ALL DUES</a>
+      </div>
+    </div>
+
+         <div class="dropdown">
+    <button class="dropbtn">COMPLAINT-BOX
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <a href="openComplaintBox.owner">OPEN COMPLAINT-BOX</a>
+     </div>
+  </div>
+
+  <div class="dropdown">
+    <button class="dropbtn">MyPG
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">    
+      <a href="viewPGDetails.owner">VIEW PG DETAILS</a>
+      <a href="openViewAndEditPGDetails.owner">EDIT PG DETAILS</a>
+    </div>
+  </div>
+
+ <div class="dropdown">
+    <button class="dropbtn">ME
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">    
+      <a href="viewOwnerDetails.owner">SHOW MY DETAILS</a>
+      <a href="openEditOwnerDetails.owner">EDIT MY DETAILS</a>
+    </div>
+  </div>
+        <a href="logOut">LOG-OUT</a>
+
+</div>
+
+
+<h1 class="h1" style="color:blue;">This is a oh3.html Blue Heading</h1> 
+</div>
+
+</body>
+</html> 

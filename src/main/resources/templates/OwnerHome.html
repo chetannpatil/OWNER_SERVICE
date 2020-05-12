@@ -1,0 +1,24 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+<head>
+<meta charset="UTF-8">
+<title>OwnerHome</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" type="text/css" href="/css/oh.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+<body>
+<!-- <div th:replace="OwnerHeader :: Oheader"></div> -->
+<!-- <div th:replace="OwnerHeader :: oh"></div> -->
+<div th:replace="OwnerHeader :: oh"></div>
+    <h1>Hi</h1><h1 th:text="${session.owner.firstName }"> Welcome</h1>
+  
+
+	<h2 th:text="${session.myPG.name }"> </h2>
+	<h2>is your PG ,  all the best</h2>
+	<h3 th:text="${successMessage}"></h3>
+</body>
+</html>

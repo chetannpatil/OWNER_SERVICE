@@ -1,0 +1,21 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+<head>
+<meta charset="UTF-8">
+<title>OwnerHome</title>
+</head>
+
+
+<body>
+<!-- <div th:replace="OwnerHeader :: Oheader"></div> -->
+<!-- <div th:replace="OwnerHeader :: oh"></div> -->
+<div th:replace="oh3 :: oh"></div>
+    <h1>Hi</h1><h1 th:text="${session.owner.firstName }"> Welcome</h1>
+  
+
+	<h2 th:text="${session.myPG.name }"> is your PG ,  all the best</h2>
+	<h3 th:text="${successMessage}"></h3>
+	<h1>new owner home may 8 2020</h1>
+</body>
+</html>
