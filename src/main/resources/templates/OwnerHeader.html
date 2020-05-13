@@ -75,8 +75,12 @@
       <i class="fa fa-caret-down"></i>
     </button>
     <div class="dropdown-content">    
-      <a href="viewOwnerDetails.owner">SHOW MY DETAILS</a>
-      <a href="openEditOwnerDetails.owner">EDIT MY DETAILS</a>
+<!--       <a href="viewOwnerDetails.owner">SHOW MY DETAILS</a> -->
+
+      <a th:href="@{/mypg/viewOwnerDetails}">SHOW MY DETAILS</a> 
+      
+<!--       <a href="openEditOwnerDetails.owner">EDIT MY DETAILS</a> -->
+      <a th:href="@{/mypg/openEditOwnerDetails}">EDIT MY DETAILS</a> 
     </div>
   </div>
 <!--         <a href="logOut">LOG-OUT</a> -->

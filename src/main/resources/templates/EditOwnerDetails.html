@@ -1,0 +1,180 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>Edit Owner Details</title>
+ <link rel="stylesheet" type="text/css" href="/css/oh.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+
+
+<h5 th:text="${duplicateOwnerErrorMessage }"></h5>
+
+
+<form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/updateOwner}"
+ th:object="${owner}" method="POST">
+<!-- <h2 th:text="${session.myPG.name }"> </h2> -->
+<input type="hidden" name="ownerId"  th:value="${session.owner.ownerId}">
+
+
+<!-- <s:input  path="pgOwnerId" type="hidden"  value='${pgOwnerBean.pgOwnerId }'/> -->
+
+<!-- <s:input path="password" type="hidden" readonly="true" value='${pgOwnerBean.password }'/> -->
+
+<!-- <s:input path="repeatPassword" type="hidden" readonly="true" value='${pgOwnerBean.password }'/> -->
+
+<table align="center" border="0" bordercolor="maroon">
+
+<tr>
+<td>
+FIRST NAME
+</td>
+<td>
+
+<input type="text"  name="firstName"th:value="${session.owner.firstName}">
+<!-- <label th:if="${#fields.hasErrors('firstName')}"   th:errors="*{firstName}"> </label>   -->
+
+</td>
+</tr>
+<tr>
+<td>
+PHONE NUMBER
+</td>
+<td>
+
+<input type="text"  readonly="true" name="phoneNumber"th:value="${session.owner.phoneNumber}">
+</td>
+
+
+<td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
+
+
+</tr>
+
+
+<tr >
+<td>
+LAST NAME
+</td>
+<td >
+
+<input type="text"  name="lastName"th:value="${session.owner.lastName}">
+</td>
+</tr>
+
+<tr>
+<td>
+D.O.B  
+</td>
+
+<td>
+
+<input type="text"  name="dob"th:value="${session.owner.dob}">
+</td>
+
+<td><b style="color: red;" th:text="${dobErrorMessage }"></b></td>
+</tr>
+
+<tr>
+<td>
+AADHAAR NUMBER
+</td>
+<td>
+
+<input type="text"  name="aadhaarNumber"th:value="${session.owner.aadhaarNumber}">
+
+</td>
+</tr>
+
+
+
+<tr>
+<td colspan="2" align="center" >ADDRESS  
+</td>
+</tr>
+
+<tr>
+<td>
+HOUSE-NUMBER  
+</td>
+<td>
+
+<input type="text"  name="houseNumber"th:value="${session.owner.address.houseNumber}">
+
+</td>
+</tr>
+
+<tr>
+<td>
+STREET  
+</td>
+<td>
+
+
+<input type="text"  name="street"th:value="${session.owner.address.street}">
+</td>
+</tr>
+
+<tr>
+<td>
+DISTRICT
+</td>
+<td>
+
+
+<input type="text"  name="disrtict"th:value="${session.owner.address.disrtict}">
+</td>
+</tr>
+
+<tr>
+<td>
+STATE  
+</td>
+<td>
+
+
+<input type="text"  name="state"th:value="${session.owner.address.state}">
+</td>
+</tr>
+
+<tr>
+<td>
+COUNTRY 
+</td>
+<td>
+
+
+<input type="text"  name="country"th:value="${session.owner.address.country}">
+
+</td>
+
+<tr>
+<td>
+PIN
+</td>
+<td>
+
+
+<input type="text"  name="pin"th:value="${session.owner.address.pin}">
+</td>
+</tr>
+
+
+<tr>
+<td colspan="2" align="center">
+<input type="submit" th:value="UpdateMYDetails"/>
+<input type="reset" th:value="reset"/>
+</td>
+</tr>
+
+
+</table>
+
+</form>
+
+</body>
+
+</html>

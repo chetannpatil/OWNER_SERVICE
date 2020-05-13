@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
@@ -300,19 +301,14 @@ public class OwnerController
 			    					  System.out.println("\n createdPG.getPgId() \n"+createdPG.getPgId());
 			    					  
 			    					  owner.setMyPG(createdPG.getPgId());
-			    					  // display test owner here to check mypg updted to db or not
-			    				  List<Owner> ownersList = ownerService.findByPhoneNumber(owner.getPhoneNumber());
-			    				  Owner testOwner  = null;
-			    				  for(Owner ow : ownersList)
-			    				  {
-			    					 if(ow.getPhoneNumber().equals(owner.getPhoneNumber()))
-			    					 {
-			    						 testOwner = ow ;
-			    						 break;
-			    					 }
-			    				  }
-			    				  System.out.println("\ntestOwner for Mypg has a \n = "+testOwner);
-			    				  System.out.println("\n testOwner.getMyPG() = \n"+testOwner.getMyPG());
+						/*
+						 * // display test owner here to check mypg updted to db or not List<Owner>
+						 * ownersList = ownerService.findByPhoneNumber(owner.getPhoneNumber()); Owner
+						 * testOwner = null; for(Owner ow : ownersList) {
+						 * if(ow.getPhoneNumber().equals(owner.getPhoneNumber())) { testOwner = ow ;
+						 * break; } } System.out.println("\ntestOwner for Mypg has a \n = "+testOwner);
+						 * System.out.println("\n testOwner.getMyPG() = \n"+testOwner.getMyPG());
+						 */
 			    				  
 			    				 //update owner to db so that owner will have mypg
 			    					Owner updatedOwner = ownerService.updateOwner(owner); 
@@ -622,5 +618,89 @@ public class OwnerController
 	    		//modelAndView.addObject("owner",);
 	    		modelAndView.setViewName("Welcome");
     			return modelAndView ;
+	    	}
+	    	
+	    	//viewOwnerDetails
+	    	@GetMapping(value = "/viewOwnerDetails")
+	    	public ModelAndView viewOwnerDetails(ModelAndView modelAndView)
+	    	{
+	    		try
+	    		{
+	    			modelAndView.setViewName("ViewOwnerDetails");
+	    			return modelAndView ;
+				}
+	    		catch (Exception e)
+	    		{
+	    			e.printStackTrace();
+	    			modelAndView.setViewName("OwnerHome");
+	    			return modelAndView ;
+				}
+	    	}
+	    	
+	    	//openEditOwnerDetails view
+	    	@GetMapping(value = "/openEditOwnerDetails")
+	    	public ModelAndView openEditOwnerDetails(ModelAndView modelAndView)
+	    	{
+	    		try
+	    		{
+	    			//Owner owner = (Owner) hs.getAttribute("owner");
+	    			
+	    			modelAndView.setViewName("EditOwnerDetails");
+	    			//modelAndView.addObject("owner", owner);
+	    			return modelAndView ;
+				}
+	    		catch (Exception e)
+	    		{
+	    			e.printStackTrace();
+	    			modelAndView.setViewName("OwnerHome");
+	    			return modelAndView ;
+				}
+	    	}
+	    	
+	/*
+	 * public ModelAndView registerPGOwner(@Valid Owner owner, BindingResult
+	 * br,HttpSession hs,ModelAndView modelAndView)
+	 */
+	    	//updateOwner
+	    	//PUT not supported in html fomr :( @PutMapping(value = "/updateOwner")
+	    	@PostMapping(value = "/updateOwner")
+	    	public ModelAndView updateOwner(@Valid Owner owner,BindingResult br,ModelAndView modelAndView)
+	    	{
+	    		if(br.hasErrors())
+	    		{
+	    			System.out.println("\n updateOwner br.hasErrors()\n");
+					//return "EditOwnerDetails";
+					modelAndView.setViewName("EditOwnerDetails");
+					modelAndView.addObject("owner", owner);
+					return modelAndView;
+ 
+	    		}
+	    		else
+	    		{
+	    			System.out.println("\n updateOwner br.passesd ()\n");
+
+	    			try
+	    			{
+	    				//pgOwnerService.update(pgOwnerBean);
+						//set back to HS
+						//hs.setAttribute("pgOwnerBean", pgOwnerBean);
+						//String ownerDetailsUpdatedSuccesMessageStr = "Your details have been updated successfully as follows";
+						//m.addAttribute("ownerDetailsUpdatedSuccesMessage", ownerDetailsUpdatedSuccesMessageStr);
+						//return "ViewOwnerDetails";
+						modelAndView.setViewName("ViewOwnerDetails");
+						return modelAndView;
+					}
+	    			catch (Exception e)
+	    			{
+		    			System.out.println("\n updateOwner catch (Exception e) ()\n");
+
+	    				e.printStackTrace();
+	    			//	m.addAttribute("errorMessage", e.getLocalizedMessage());
+	    				modelAndView.addObject("errorMessage", e.getMessage());
+	    				//return "Error";
+	    				modelAndView.setViewName("ViewOwnerDetails");
+						return modelAndView;
+					}
+	    		}
 	    	}
 }

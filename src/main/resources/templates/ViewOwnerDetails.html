@@ -1,0 +1,150 @@
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>ViewOwnerDetails</title>
+
+ <link rel="stylesheet" type="text/css" href="/css/oh.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+ 
+</head>
+
+<body>
+
+<div th:replace="OwnerHeader :: oh"></div>
+
+<h4  align="center" th:text="${ownerDetailsUpdatedSuccesMessage }"></h4>
+
+<!-- <someTag th:if = "!condition"> ... </someTag> -->
+
+<br/>
+<table th:if = "${session.owner != null}" align="center" border="0" bordercolor="maroon">
+
+<tr>
+
+<td>
+FIRST NAME
+</td>
+
+<td>
+<label th:text="${session.owner.firstName }"></label>
+</td>
+
+</tr>
+
+<tr>
+<td>
+LAST NAME
+</td>
+<td>
+<label th:text="${session.owner.lastName }"></label>
+</td>
+</tr>
+
+<tr>
+<td>
+PHONE NUMBER
+</td>
+<td>
+<label th:text="${session.owner.phoneNumber }"></label>
+</td>
+</tr>
+
+<tr>
+<td>
+AADHAAR NUMBER
+</td>
+<td>
+<label th:text="${session.owner.aadhaarNumber }"></label>
+</td>
+</tr>
+
+<tr>
+<td>
+DOB
+</td>
+<td>
+<label th:text="${session.owner.dob }"></label>
+</td>
+</tr>
+
+<tr>
+<td>
+MY PG NAME
+</td>
+<td>
+<label th:text="${session.myPG.name }"></label>
+</td>
+</tr>
+
+<tr>
+<td colspan="2" align="center" >ADDRESS  
+</td>
+</tr>
+
+<tr>
+<td>
+HOUSE-NUMBER  
+</td>
+<td>
+<label th:text="${session.owner.address.houseNumber }"></label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+STREET  
+</td>
+<td>
+<label th:text="${session.owner.address.street }"></label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+DISTRICT
+</td>
+<td>
+<label th:text="${session.owner.address.disrtict }"></label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+STATE  
+</td>
+<td>
+<label th:text="${session.owner.address.state }"></label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+COUNTRY 
+</td>
+<td>
+<label th:text="${session.owner.address.country }"></label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+PIN
+</td>
+<td>
+<label th:text="${session.owner.address.pin}"></label>
+</td>
+</tr>
+
+
+
+</table>
+
+</body>
+</html>
