@@ -1,14 +1,19 @@
 package io.chetan.service;
 
 import java.util.List;
+import java.util.Optional;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.chetan.dao.OwnerDao;
 import io.chetan.model.Owner;
 
 @Service
+@Transactional(propagation=Propagation.SUPPORTS,rollbackFor=Exception.class)
 public class OwnerService {
 
 	@Autowired
@@ -37,8 +42,23 @@ public class OwnerService {
 
 	public Owner updateOwner(Owner owner) 
 	{
+ 
+//		Optional<Owner> oldOwnerOptional = ownerDao.findById(owner.getOwnerId());
+//		
+//		Owner oldOwner = oldOwnerOptional.get();
+//		
+//		oldOwner.setFirstName(owner.getFirstName());
+//		
+//		Owner updatedOwner = ownerDao.save(oldOwner);
+//		
+		System.out.println("\n OwnerService updateOwner() b4 update owner recvd in service layer is =  \n"+owner);
+		//owner.setOwnerId(420);
+		
+		//owner.setRepeatPassword(owner.getRepeatPassword());
+		System.out.println("\n\n owner aftr seting id = "+owner);
+		Owner updatedOwner = ownerDao.save(owner) ;
+		System.out.println("\n OwnerService updateOwner() updatedOwner = \n"+updatedOwner);
 
-		 //Owner savedOwner = 
-		return ownerDao.save(owner);
+		return updatedOwner ;
 	}
 }

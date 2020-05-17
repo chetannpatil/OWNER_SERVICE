@@ -2,7 +2,7 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Edit Owner Details</title>
+<title>Edit Pg Details</title>
  <link rel="stylesheet" type="text/css" href="/css/oh.css">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
@@ -11,93 +11,45 @@
 <div th:replace="OwnerHeader :: oh"></div>
 
 
-<h5 th:text="${duplicateOwnerErrorMessage }"></h5>
+<h5 th:text="${duplicatePGErrorMessage }"></h5>
 
 
-<!-- <form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/updateOwner}" -->
-<!--  th:object="${owner}" method="POST"> -->
 
- <form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/updateOwner}"  th:object="${owner}" method="POST">
- 
-<!--  <input type="hidden" name="ownerId"  th:value="${session.owner.ownerId}"> -->
 
- <input type="hidden"  th:field="*{ownerId}"/>
- <input type="hidden"  th:field="*{password}"/>
- <input type="hidden" th:field="*{repeatPassword}"/>
- <input type="hidden" th:field="*{myPg}"/>
+
+
+
+ <form th:if = "${session.myPg != null}" action="#" th:action="@{/mypg/updatePg}"  th:object="${pg}" method="POST">
+<input type="hidden"  th:field="*{pgId}"/>
 
 <table align="center" border="0" bordercolor="maroon">
-<!-- <tr> -->
-<!-- <td> -->
-
-<!--  </td> -->
-<!--  </tr> -->
  
 <tr>
 <td>
-FIRST NAME is
+PG NAME
 </td>
 
 <td>
-<input type="text" th:field="*{firstName}"/>     
-<label th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"> </label>   
+<input type="text" th:field="*{name}"/>     
+<label th:if="${#fields.hasErrors('name')}" th:errors="*{name}"> </label>   
   
 
 </td>
 </tr>
 <tr>
 <td>
-PHONE NUMBER
+PG STARTED DATE
 </td>
 <td>
 
-<input type="text" readonly="true" th:field="*{phoneNumber}" />       
-<!-- <label th:if="${#fields.hasErrors('phoneNumber')}"   th:errors="*{phoneNumber}"> </label> -->
+<!-- <input type="text" readonly="true" th:field="*{pgStartedDate}" />    -->
+<label th:text="${session.myPg.pgStartedDate }"></label>
+    
 </td>
 
 <td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
 
 </tr>
-
-
-
-<tr >
-<td>
-LAST NAME
-</td>
-<td >
-
-<input type="text" th:field="*{lastName}"/>
-<label th:if="${#fields.hasErrors('lastName')}"  th:errors="*{lastName}"> </label>
-</td>
-</tr>
-
-<tr>
-<td>
-D.O.B  
-</td>
-
-<td>
-
-<input type="text" th:field="*{dob}"/>
-<label th:if="${#fields.hasErrors('dob')}"  th:errors="*{dob}"> </label>
-</td>
-
-<td><b style="color: red;" th:text="${dobErrorMessage }"></b></td>
-</tr>
-
-<tr>
-<td>
-AADHAAR NUMBER
-</td>
-<td>
-
-<input type="text" th:field="*{aadhaarNumber}"/>
-<label th:if="${#fields.hasErrors('aadhaarNumber')}"  th:errors="*{aadhaarNumber}"> </label>
-
-</td>
-</tr>
-
 
 
 <tr>
@@ -180,7 +132,7 @@ PIN
 
 <tr>
 <td colspan="2" align="center">
-<input type="submit" th:value="UpdateMYDetails"/>
+<input type="submit" th:value="UpdateMYPgDetails"/>
 <input type="reset" th:value="reset"/>
 </td>
 </tr>

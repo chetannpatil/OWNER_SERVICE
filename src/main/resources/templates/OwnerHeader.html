@@ -65,8 +65,11 @@
       <i class="fa fa-caret-down"></i>
     </button>
     <div class="dropdown-content">    
-      <a href="viewPGDetails.owner">VIEW PG DETAILS</a>
-      <a href="openViewAndEditPGDetails.owner">EDIT PG DETAILS</a>
+<!--       <a href="viewPGDetails.owner">VIEW PG DETAILS</a> -->
+            <a th:href="@{/mypg/viewPgDetails}">VIEW MY PG DETAILS</a> 
+<!--       <a href="openViewAndEditPgDetails.owner">EDIT PG DETAILS</a> -->
+           
+            <a th:href="@{/mypg/openEditPgDetails}">EDIT MY PG DETAILS</a> 
     </div>
   </div>
 

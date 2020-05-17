@@ -46,8 +46,11 @@ public class Owner
 	@NotEmpty(message="If you do not wish to set password then how you will login in future?")
 	private String password;
     
+//	@NotEmpty(message="Cant you remember the password you just entered above ? Please enter same password.")
+//	private transient String repeatPassword ;
+	
 	@NotEmpty(message="Cant you remember the password you just entered above ? Please enter same password.")
-	private transient String repeatPassword ;
+	private String repeatPassword ;
 	
 	@Email(message="Not at all a email id")
 	private String emailId ;
@@ -56,7 +59,7 @@ public class Owner
 	//should not map from one microservc to another's entity
 	//private Pg myPG ;
 	
-	private Long myPG ;
+	private Long myPg ;
 	
 	//private long myPG ;
     
@@ -188,12 +191,6 @@ public class Owner
 		// TODO Auto-generated constructor stub
 	}
 
-
-	public String getRepeatPassword() 
-	{
-		return repeatPassword;
-	}
-
 	public static boolean isPasswordMatchingRepeatPassword(String psw, String repPsw)
 	{
 		
@@ -205,45 +202,37 @@ public class Owner
 			return true ;
 	}
 
+	
+
+
+	public Long getMyPg() {
+		return myPg;
+	}
+
+
+	public void setMyPg(Long myPg) {
+		this.myPg = myPg;
+	}
+
+
+	public String getRepeatPassword() {
+		return repeatPassword;
+	}
+
 
 	public void setRepeatPassword(String repeatPassword) {
 		this.repeatPassword = repeatPassword;
 	}
 
 
-	
-
-
 	@Override
 	public String toString() {
 		return "Owner [ownerId=" + ownerId + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber="
 				+ phoneNumber + ", aadhaarNumber=" + aadhaarNumber + ", address=" + address + ", dob=" + dob
-				+ ", password=" + password + ", emailId=" + emailId + ", myPG=" + myPG + "]";
+				+ ", password=" + password + ", repeatPassword=" + repeatPassword + ", emailId=" + emailId + ", myPg="
+				+ myPg + "]";
 	}
 
 
-	public Long getMyPG() {
-		return myPG;
-	}
-
-
-	public void setMyPG(Long myPG) {
-		this.myPG = myPG;
-	}
-
-
-	
-
-
-	
-
-
-	
-
-	
-
-
-
-	
 	
 }
