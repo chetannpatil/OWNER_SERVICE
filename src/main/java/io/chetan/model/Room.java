@@ -2,6 +2,7 @@ package io.chetan.model;
 
 import java.util.Set;
 
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -16,12 +17,9 @@ import org.springframework.format.annotation.NumberFormat.Style;
 
 import io.chetan.exception.InMatesOverFlowInARoomException;
 
-
 public class Room implements Comparable<Room>
 {
 
-	//@Id
-	//@GeneratedValue
 	private long roomId;
 	
 	//@OneToMany(mappedBy="myRoom",fetch=FetchType.EAGER)
@@ -45,8 +43,13 @@ public class Room implements Comparable<Room>
 	//final private String roomNumber;
 	
 	//@ManyToOne
-	private Long roomBelongsTo ;
+	//private Long roomBelongsTo ;
 
+	//private Long roomOfThePg ;
+
+	private Long myPg ;
+	
+	
 	@NotNull(message="you must reveal room rent per head for this room")
 	@NumberFormat(style=Style.CURRENCY)
 	private Double costPerBed ;
@@ -92,33 +95,7 @@ public class Room implements Comparable<Room>
 		return roomNumber;
 	}
 
-
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((roomNumber == null) ? 0 : roomNumber.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Room other = (Room) obj;
-		if (roomNumber == null) {
-			if (other.roomNumber != null)
-				return false;
-		} else if (!roomNumber.equals(other.roomNumber))
-			return false;
-		return true;
-	}
+	
 
 	@Override
 	public int compareTo(Room room)
@@ -128,6 +105,59 @@ public class Room implements Comparable<Room>
 		return (rmNo1 - rmNo2 );
 	}
 	
+	
+	
+	
+	public Set<Long> getRoomMates() {
+		return roomMates;
+	}
+
+	public void setRoomMates(Set<Long> roomMates) {
+		this.roomMates = roomMates;
+	}
+
+
+
+
+	public Long getMyPg() {
+		return myPg;
+	}
+
+	public void setMyPg(Long myPg) {
+		this.myPg = myPg;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((myPg == null) ? 0 : myPg.hashCode());
+		result = prime * result + ((roomNumber == null) ? 0 : roomNumber.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Room other = (Room) obj;
+		if (myPg == null) {
+			if (other.myPg != null)
+				return false;
+		} else if (!myPg.equals(other.myPg))
+			return false;
+		if (roomNumber == null) {
+			if (other.roomNumber != null)
+				return false;
+		} else if (!roomNumber.equals(other.roomNumber))
+			return false;
+		return true;
+	}
+
 	//behaviours
 	public void addBed(int noOfbeds)
 	{
@@ -140,29 +170,29 @@ public class Room implements Comparable<Room>
 		this.numberOfBeds = this.numberOfBeds - noOfbeds ;
 	}
 
-	public boolean addInMate(InMate inMate)
-	{
-		if(inMate != null)
-		{
-			//check vacancy
-			if(this.numberOfBeds > this.roomMates.size())
-			{
-				if(this.roomMates.add(inMate.getInMateId()) == false)
-				{
-					return false;
-					//throw new DuplicateInMateException("Could not add InMate "+inMate.getFirstName()+" to the room");
-				}
-				else
-					return true ;
-			}
-			else
-			{
-				throw new InMatesOverFlowInARoomException("There is no vacancy in the room = "+this.roomNumber);
-			}
-		}
-		else
-			return false;
-	}
+//	public boolean addInMate(InMate inMate)
+//	{
+//		if(inMate != null)
+//		{
+//			//check vacancy
+//			if(this.numberOfBeds > this.roomMates.size())
+//			{
+//				if(this.roomMates.add(inMate.getInMateId()) == false)
+//				{
+//					return false;
+//					//throw new DuplicateInMateException("Could not add InMate "+inMate.getFirstName()+" to the room");
+//				}
+//				else
+//					return true ;
+//			}
+//			else
+//			{
+//				throw new InMatesOverFlowInARoomException("There is no vacancy in the room = "+this.roomNumber);
+//			}
+//		}
+//		else
+//			return false;
+//	}
 	
 	//removeInMate() ?
 	
@@ -191,6 +221,10 @@ public class Room implements Comparable<Room>
 		this.roomNumber = roomNumber;
 	}
 
+	
+	
+	
+	
 	//non behavioral
 	private static int generateRoomNumber()
 	{
@@ -200,14 +234,19 @@ public class Room implements Comparable<Room>
 		return randomNumber ;
 	}
 	
-	public static boolean isValidNumberOfBeds(int numberOfBeds)
-	{
-		
-		if(numberOfBeds <= 0)
-			return false;
-		else
-			return true ;
+	/*
+	 * public static boolean isValidNumberOfBeds(int numberOfBeds) {
+	 * 
+	 * if(numberOfBeds <= 0) return false; else return true ; }
+	 */
+
+	@Override
+	public String toString() {
+		return "Room [roomId=" + roomId + ", roomMates=" + roomMates + ", numberOfBeds=" + numberOfBeds
+				+ ", roomNumber=" + roomNumber + ", myPg=" + myPg + ", costPerBed=" + costPerBed + "]";
 	}
+
+	
 	
 	
 }

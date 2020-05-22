@@ -18,13 +18,13 @@
 
 <h5  align="center" th:text="${duplicatePGErrorMessage }"></h5>
 
-<table th:if = "${session.myPg != null}" align="center" border="0" bordercolor="maroon">
+<table th:if = "${session.pg != null}" align="center" border="0" bordercolor="maroon">
 <tr>
 <td>
 PG NAME
 </td>
 <td>
-<label th:text="${session.myPg.name }"></label>
+<label th:text="${session.pg.name }"></label>
 </td>
 </tr>
 
@@ -33,7 +33,7 @@ PG NAME
 PG STARTED DATE
 </td>
 <td>
-<label th:text="${session.myPg.pgStartedDate }"></label>
+<label th:text="${session.pg.pgStartedDate }"></label>
 </td>
 </tr>
 
@@ -47,7 +47,7 @@ PG STARTED DATE
 HOUSE-NUMBER  
 </td>
 <td>
-<label th:text="${session.myPg.address.houseNumber }"></label>
+<label th:text="${session.pg.address.houseNumber }"></label>
 </td>
 </tr>
 
@@ -56,7 +56,7 @@ HOUSE-NUMBER
 STREET  
 </td>
 <td>
-<label th:text="${session.myPg.address.street }"></label>
+<label th:text="${session.pg.address.street }"></label>
 </td>
 </tr>
 
@@ -65,7 +65,7 @@ STREET
 DISTRICT
 </td>
 <td>
-<label th:text="${session.myPg.address.disrtict }"></label>
+<label th:text="${session.pg.address.disrtict }"></label>
 </td>
 </tr>
 
@@ -74,7 +74,7 @@ DISTRICT
 STATE  
 </td>
 <td>
-<label th:text="${session.myPg.address.state }"></label>
+<label th:text="${session.pg.address.state }"></label>
 </td>
 </tr>
 
@@ -83,7 +83,7 @@ STATE
 COUNTRY 
 </td>
 <td>
-<label th:text="${session.myPg.address.country }"></label>
+<label th:text="${session.pg.address.country }"></label>
 </td>
 </tr>
 
@@ -92,7 +92,7 @@ COUNTRY
 PIN
 </td>
 <td>
-<label th:text="${session.myPg.address.pin}"></label>
+<label th:text="${session.pg.address.pin}"></label>
 </td>
 </tr>
 

@@ -1,0 +1,86 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+ 
+<head>
+<meta charset="UTF-8">
+<title>Add Room</title>
+ <link rel="stylesheet" type="text/css" href="/css/oh.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+
+
+<h1 align="center">Please enter your Pg details to add a room to ur PG</h1>
+
+<h4 th:text="${errorMessage }" align="center"></h4>
+
+<h1 align="center">ALL ARE MANDATORY FIELDS</h1>
+
+
+ <form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/addARoom}"  th:object="${room}" method="POST">
+
+                                    <!-- th:value="${session.owner.ownerId}"> -->
+                                    
+<!--  <input type="hidden" th:field="*{myPg}" th:value ="${session.pg.pgId}"/> -->
+ 
+<!--   <input type="text" readonly="true" th:field="*{myPg}" th:value ="${session.pg.pgId}" /> -->
+ 
+   <input type="text" name="myPg" readonly="true"  th:value ="${session.pg.pgId}" />
+   
+<table align="center" border="0" bordercolor="maroon">
+
+<tr>
+<td>
+NUMBER OF BEDS
+</td>
+<td>
+
+<input type="text" th:field="*{numberOfBeds}"/>     
+<label th:if="${#fields.hasErrors('numberOfBeds')}" th:errors="*{numberOfBeds}"> </label>   
+</td>
+</tr>
+
+<tr>
+<td>
+ROOM NUMBER
+</td>
+<td>
+
+<input type="text" th:field="*{roomNumber}"/>     
+<label th:if="${#fields.hasErrors('roomNumber')}" th:errors="*{roomNumber}"> </label>   
+
+</td>
+
+
+<td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
+
+</tr>
+
+
+<tr>
+<td>
+COST PER BED
+</td>
+<td>
+
+<input type="text" th:field="*{costPerBed}"/>     
+<label th:if="${#fields.hasErrors('costPerBed')}" th:errors="*{costPerBed}"> </label>   
+</td>
+
+<tr>
+<td colspan="2" align="center">
+<input type="submit" value="AddARoom"/> 
+</td>
+</tr>
+
+</table>
+
+</form>
+
+</body>
+</html>

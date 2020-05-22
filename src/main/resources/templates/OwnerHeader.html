@@ -34,8 +34,12 @@
       <i class="fa fa-caret-down"></i>
     </button>
     <div class="dropdown-content">
-	 <a href="openAddARoom.owner">ADD ROOM</a>
-      <a href="viewRooms.owner">VIEW ROOMS</a>
+<!-- 	 <a href="openAddARoom.owner">ADD ROOM</a> -->
+	       <a th:href="@{/mypg/openAddARoom}">ADD A ROOM</a>
+	 
+<!--       <a href="viewRooms.owner">VIEW ROOMS</a> -->
+            <a th:href="@{/mypg/viewRooms}">VIEW ROOMS</a>
+      
       </div>
 
   </div> 
@@ -97,7 +101,9 @@
 </div>
 
 
-
+<h5 th:text="${duplicatePgErrorMessage }"></h5>
+               
+<h5 th:text="${successMessage }"></h5>
 </div>
 
 </body>

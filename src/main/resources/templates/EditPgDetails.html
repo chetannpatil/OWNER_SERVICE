@@ -11,136 +11,107 @@
 <div th:replace="OwnerHeader :: oh"></div>
 
 
-<h5 th:text="${duplicatePGErrorMessage }"></h5>
+<!-- <h5 th:text="${duplicatePgErrorMessage }"></h5> -->
+               
+<!-- <h5 th:text="${successMessage }"></h5> -->
+
+<div align="center">
+<h4 th:text="${houseNumberErrorMessage }"></h4>
+<h4 th:text="${streetErrorMessage }"></h4>
+<h4 th:text="${districtErrorMessage }"></h4>
+<h4 th:text="${stateErrorMessage }"></h4>
+<h4 th:text="${countryErrorMessage }"></h4>
+<h4 th:text="${pinErrorMessage }"></h4>
+</div>
 
 
 
 
 
 
+	<form th:if="${session.pg != null}" action="#"
+		th:action="@{/mypg/updatePg}" th:object="${pg}" method="POST">
+		<input type="hidden" th:field="*{pgId}" /> 
+		<input type="hidden" th:field="*{myOwner}" />
+		<table align="center" border="0" bordercolor="maroon">
 
- <form th:if = "${session.myPg != null}" action="#" th:action="@{/mypg/updatePg}"  th:object="${pg}" method="POST">
-<input type="hidden"  th:field="*{pgId}"/>
+			<tr>
+				<td>PG NAME</td>
 
-<table align="center" border="0" bordercolor="maroon">
- 
-<tr>
-<td>
-PG NAME
-</td>
-
-<td>
-<input type="text" th:field="*{name}"/>     
-<label th:if="${#fields.hasErrors('name')}" th:errors="*{name}"> </label>   
-  
-
-</td>
-</tr>
-<tr>
-<td>
-PG STARTED DATE
-</td>
-<td>
-
-<!-- <input type="text" readonly="true" th:field="*{pgStartedDate}" />    -->
-<label th:text="${session.myPg.pgStartedDate }"></label>
-    
-</td>
-
-<td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
-
-</tr>
+				<td><input type="text" th:field="*{name}" /> <label
+					th:if="${#fields.hasErrors('name')}" th:errors="*{name}"> </label>
 
 
-<tr>
-<td colspan="2" align="center" >ADDRESS  
-</td>
-</tr>
+				</td>
+			</tr>
+			<tr>
+				<td>PG STARTED DATE</td>
+				<td>
+					<!-- <input type="text" readonly="true" th:field="*{pgStartedDate}" />    -->
+					<label th:text="${session.pg.pgStartedDate }"></label>
 
-<tr>
-<td>
-HOUSE-NUMBER  
-</td>
-<td>
+				</td>
 
-<input type="text" th:field="*{address.houseNumber}"/>
-<label th:if="${#fields.hasErrors('address.houseNumber')}"  th:errors="*{address.houseNumber}" > </label>
+				<td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
 
-</td>
-</tr>
-
-<tr>
-<td>
-STREET  
-</td>
-<td>
+			</tr>
 
 
-<input type="text" th:field="*{address.street}"/>
-<label th:if="${#fields.hasErrors('address.street')}"  th:errors="*{address.street}"> </label>
-</td>
-</tr>
+			<tr>
+				<td colspan="2" align="center">ADDRESS</td>
+			</tr>
 
-<tr>
-<td>
-DISTRICT
-</td>
-<td>
+			<tr>
+				<td>HOUSE-NUMBER</td>
+				<td><input type="text" th:field="*{address.houseNumber}" /> <label
+					th:if="${#fields.hasErrors('address.houseNumber')}"
+					th:errors="*{address.houseNumber}"> </label></td>
+			</tr>
 
+			<tr>
+				<td>STREET</td>
+				<td><input type="text" th:field="*{address.street}" /> <label
+					th:if="${#fields.hasErrors('address.street')}"
+					th:errors="*{address.street}"> </label></td>
+			</tr>
 
-<input type="text" th:field="*{address.disrtict}"/>
-<label th:if="${#fields.hasErrors('address.disrtict')}"  th:errors="*{address.disrtict}"> </label>
-</td>
-</tr>
+			<tr>
+				<td>DISTRICT</td>
+				<td><input type="text" th:field="*{address.disrtict}" /> <label
+					th:if="${#fields.hasErrors('address.disrtict')}"
+					th:errors="*{address.disrtict}"> </label></td>
+			</tr>
 
-<tr>
-<td>
-STATE  
-</td>
-<td>
+			<tr>
+				<td>STATE</td>
+				<td><input type="text" th:field="*{address.state}" /> <label
+					th:if="${#fields.hasErrors('address.state')}"
+					th:errors="*{address.state}"> </label></td>
+			</tr>
 
-
-<input type="text" th:field="*{address.state}"/>
-<label th:if="${#fields.hasErrors('address.state')}"  th:errors="*{address.state}"> </label>
-</td>
-</tr>
-
-<tr>
-<td>
-COUNTRY 
-</td>
-<td>
-
-
-<input type="text" th:field="*{address.country}"/>
-<label th:if="${#fields.hasErrors('address.country')}"  th:errors="*{address.country}"> </label>
-
-</td>
-
-<tr>
-<td>
-PIN
-</td>
-<td>
+			<tr>
+				<td>COUNTRY</td>
+				<td><input type="text" th:field="*{address.country}" /> <label
+					th:if="${#fields.hasErrors('address.country')}"
+					th:errors="*{address.country}"> </label></td>
+			<tr>
+				<td>PIN</td>
+				<td><input type="text" th:field="*{address.pin}" /> <label
+					th:if="${#fields.hasErrors('address.pin')}"
+					th:errors="*{address.pin}"> </label></td>
+			</tr>
 
 
-<input type="text" th:field="*{address.pin}"/>
-<label th:if="${#fields.hasErrors('address.pin')}"  th:errors="*{address.pin}"> </label>
-</td>
-</tr>
+			<tr>
+				<td colspan="2" align="center"><input type="submit"
+					th:value="UpdateMYPgDetails" /> <input type="reset"
+					th:value="reset" /></td>
+			</tr>
 
 
-<tr>
-<td colspan="2" align="center">
-<input type="submit" th:value="UpdateMYPgDetails"/>
-<input type="reset" th:value="reset"/>
-</td>
-</tr>
+		</table>
 
-
-</table>
-
-</form>
+	</form>
 
 </body>
 

@@ -24,7 +24,7 @@ public final class Pg implements Comparable<Pg>
 	
 	private Address address ;
 	
-	private int totalRooms;
+	//private int totalRooms;
 	
 	//@OneToMany(mappedBy="roomBelongsTo",fetch=FetchType.EAGER)
 	private Set<Long> rooms ;
@@ -54,30 +54,28 @@ public final class Pg implements Comparable<Pg>
 	}
 
 
-	public void setTotalRooms(int totalRooms) {
-		this.totalRooms = totalRooms;
-	}
 
-	@Override
-	public String toString() {
-		return "PG [pgId=" + pgId + ", name=" + name + ", address=" + address + ", totalRooms=" + totalRooms
-				+ ", rooms=" + rooms + ", complaintBox=" + complaintBox + ", pgStartedDate=" + pgStartedDate
-				+ ", myOwner=" + myOwner + "]";
-	}
 
 	//behaviours
 
 	
-	public boolean addRoom(Room room)
+	@Override
+	public String toString() {
+		return "Pg [pgId=" + pgId + ", name=" + name + ", address=" + address + ", rooms=" + rooms + ", complaintBox="
+				+ complaintBox + ", pgStartedDate=" + pgStartedDate + ", bills=" + bills + ", myOwner=" + myOwner + "]";
+	}
+
+
+	public boolean addRoom(long roomid)
 	{
-		if(room != null)
-		{
+		//if(roomid != null)
+		//{
 			if(this.rooms != null)
 			{
 				System.out.println("PG addrom ()rooms set is  not null");
-				if(this.rooms.add(room.getRoomId()) == false)
+				if(this.rooms.add(roomid) == false)
 				{
-					System.out.println("PG addrom () Could not add the room "+room.getRoomNumber()+ " to PG");
+					System.out.println("PG addrom () Could not add the room  to PG");
 					//throw new DuplicateRoomException("Could not add the room "+room.getRoomNumber()+ " to PG");
 					return false ;
 				}
@@ -85,27 +83,27 @@ public final class Pg implements Comparable<Pg>
 				{
 					System.out.println("");
 					System.out.println("PG addRoom() room = ");
-					System.out.println(room);
-					this.totalRooms = this.totalRooms+1;
+					System.out.println(roomid);
+					//this.totalRooms = this.totalRooms+1;
 					return true ;
 				}
-			}
-			else
-			{
-				System.out.println("PG addrom ()rooms set is null");
-				return false ;
-			}
+			//}
+			//else
+			//{
+			//	System.out.println("PG addrom ()rooms set is null");
+			//	return false ;
+			//}
 			
 		}
 		else
 			return false;
 	}
 
-	public boolean removeRoom(Room room)
+	public boolean removeRoom(long roomId)
 	{
-		if(room != null)
-		{
-			if(this.rooms.remove(room.getRoomId()) == false)
+		//if(room != null)
+		//{
+			if(this.rooms.remove(roomId) == false)
 			{
 				//throw new CanNotRemoveTheRoomException("Could not remove the room "+room.getRoomNumber()+ " from PG");
 				return false ;
@@ -114,33 +112,33 @@ public final class Pg implements Comparable<Pg>
 			{
 				System.out.println("");
 				System.out.println("PG removeRoom() room = ");
-				System.out.println(room);
-				this.totalRooms = this.totalRooms - 1;
+				//System.out.println(room);
+				//this.totalRooms = this.totalRooms - 1;
 				return true;
 			}
-		}
-		else
-			return false;
+		//}
+		//else
+			//return false;
 	}
 	
 	
-	public void addAComplaint(Complaint complaint)
-	{
-		if(complaint != null)
-		{
-			if(this.complaintBox.add(complaint.getComplaintId()) == false)
-				throw new CanNotAddAComplaintException("Could not add a complaint "+complaint.getComplaintId());
-		}
-	}
+//	public void addAComplaint(Complaint complaint)
+//	{
+//		if(complaint != null)
+//		{
+//			if(this.complaintBox.add(complaint.getComplaintId()) == false)
+//				throw new CanNotAddAComplaintException("Could not add a complaint "+complaint.getComplaintId());
+//		}
+//	}
 	
-	public void removeTheComlaint(Complaint complaint)
-	{
-		if(complaint != null)
-		{
-			if(this.complaintBox.remove(complaint.getComplaintId()) == false)
-				throw new CanNotRemoveTheComplaintException("Could not remove the complaint "+complaint.getComplaintId());
-		}
-	}
+//	public void removeTheComlaint(Complaint complaint)
+//	{
+//		if(complaint != null)
+//		{
+//			if(this.complaintBox.remove(complaint.getComplaintId()) == false)
+//				throw new CanNotRemoveTheComplaintException("Could not remove the complaint "+complaint.getComplaintId());
+//		}
+//	}
 
 	
 
@@ -168,15 +166,7 @@ public final class Pg implements Comparable<Pg>
 		return pgId;
 	}
 
-	public int getTotalRooms() 
-	{
-		if(this.rooms != null)
-		{
-			return rooms.size();
-		}
-		else
-			return this.totalRooms ;
-	}
+
 
 
 	@Override
