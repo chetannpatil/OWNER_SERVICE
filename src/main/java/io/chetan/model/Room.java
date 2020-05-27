@@ -28,8 +28,8 @@ public class Room implements Comparable<Room>
 	//@Min(1)
 	//private int numberOfBeds ;
 	//@Pattern(regexp="(^[0-9]{10})",message="Number of beds should be numeric,do not tell that in words pls")
-	@Min(1)
-	@Max(10)
+	@Min(value = 1,message ="There must be atleast 1 bed in the room pls")
+	@Max(value = 10,message ="There can  be max 10 bed in the room ")
 	@NotNull(message="There must be atleast 1 bed in the room pls")
 	@NumberFormat(style=Style.NUMBER)
 	private Integer  numberOfBeds ;
@@ -38,7 +38,7 @@ public class Room implements Comparable<Room>
 	//@Pattern(regexp="(^[0-9]{10})",message="Invalid Phone number")
 	//@Min(1)
 	@NotEmpty(message="Room number is required")
-	@Pattern(regexp="([0-9]{3,4})",message="Room number shouldbe in the range 3digits to 4digits, ex: 402,where 4 = 4th floor, 2 = second room")
+	@Pattern(regexp="([0-9]{3,4})",message="Room number should be in the range 3digits to 4digits, ex: 402,where 4 = 4th floor, 2 = second room")
 	private String roomNumber;
 	//final private String roomNumber;
 	
@@ -49,7 +49,7 @@ public class Room implements Comparable<Room>
 
 	private Long myPg ;
 	
-	
+	@Min(value = 1,message = "U want to pay to tenant or what ?")
 	@NotNull(message="you must reveal room rent per head for this room")
 	@NumberFormat(style=Style.CURRENCY)
 	private Double costPerBed ;

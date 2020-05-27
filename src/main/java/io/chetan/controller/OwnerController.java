@@ -22,6 +22,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,14 +32,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 
-
+import io.chetan.exception.CanNotRemoveTheRoomException;
 import io.chetan.exception.CouldNotLoadYourPgException;
 import io.chetan.exception.DuplicateOwnerException;
 import io.chetan.exception.DuplicatePgException;
 import io.chetan.exception.DuplicateRoomException;
+import io.chetan.exception.InMatesOverFlowInARoomException;
 import io.chetan.exception.InvalidCredentialsException;
 import io.chetan.exception.PasswordMissMatchException;
 import io.chetan.exception.PgAddressCanNotBeEmptyException;
+import io.chetan.exception.RoomDoesNotExistExcepton;
 import io.chetan.model.Address;
 
 import io.chetan.model.Owner;
@@ -96,6 +99,44 @@ public class OwnerController
 //
 //		return modelAndView;
 //	}
+	
+	//redundant methdos
+	
+	public Room searchRoom(String roomNumber,long myPg)
+	{
+		System.out.println("\n searchRoom \n");
+		
+		String findRoomUri =ROOM_SERVICE_URI+"/findRoomByRoomNumberAndMyPg/"
+				+ "roomNumber/{roomNumber}/"
+				+ "myPg/{myPg}";
+		
+		uriVariablesMap = new HashMap<String, String>();
+		
+
+		uriVariablesMap.put("roomNumber", roomNumber);
+		
+
+		uriVariablesMap.put("myPg",Long.toString(myPg));
+		
+
+		
+		
+		Room foundRoom = restTemplate.getForObject(findRoomUri,
+				Room.class,
+				uriVariablesMap);
+		
+		return foundRoom ;
+	}
+	
+	public Room searchRoom(long roomId)
+	{
+		System.out.println("\n searchRoomByRoomId \n");
+
+		Room room = restTemplate.getForObject(ROOM_SERVICE_URI+"findRoomById/{roomId}",
+				Room.class,
+				roomId);
+		return room ;
+	}
 	
 	// private Logger
 	@GetMapping("/")
@@ -1016,23 +1057,23 @@ public class OwnerController
 				
 				//check for duplicate room
 				
-				String findRoomUri =ROOM_SERVICE_URI+"/findRoomByRoomNumberAndMyPg/"
-						+ "roomNumber/{roomNumber}/"
-						+ "myPg/{myPg}";
-				uriVariablesMap = new HashMap<String, String>();
-				System.out.println("\n addARoom urivariblemapap b4 adding room varibales = \n"+uriVariablesMap);
+//				String findRoomUri =ROOM_SERVICE_URI+"/findRoomByRoomNumberAndMyPg/"
+//						+ "roomNumber/{roomNumber}/"
+//						+ "myPg/{myPg}";
+				
+				//System.out.println("\n addARoom urivariblemapap b4 adding room varibales = \n"+uriVariablesMap);
 				//uriVariablesMap.forEach(System.out::println);
-				for(Entry<String, String>  e: uriVariablesMap.entrySet())
-				{
-					System.out.println("\n Entry e =\n"+e);
-					System.out.println("e.getkey = "+e.getKey());
-					System.out.println("e.getValue() = "+e.getValue());
-				}
-				uriVariablesMap.put("roomNumber", room.getRoomNumber());
+//				for(Entry<String, String>  e: uriVariablesMap.entrySet())
+//				{
+//					System.out.println("\n Entry e =\n"+e);
+//					System.out.println("e.getkey = "+e.getKey());
+//					System.out.println("e.getValue() = "+e.getValue());
+//				}
+				//uriVariablesMap.put("roomNumber", room.getRoomNumber());
 				
 				//String.valueOf calls Long.toString() so Long.toString i faster
 				//Long.toString(room.getRoomOfThePg());
-				uriVariablesMap.put("myPg",Long.toString(room.getMyPg()));
+				//uriVariablesMap.put("myPg",Long.toString(room.getMyPg()));
 				
 				//uriVariablesMap.put("myPg",Long.toString(pg.getPgId()));
 
@@ -1043,9 +1084,12 @@ public class OwnerController
 //				restTemplate.getForObject(findRoomUri,
 //						Room.class,
 //						room.getRoomNumber(),room.getRoomOfThePg());
-				Room foundRoom = restTemplate.getForObject(findRoomUri,
-						Room.class,
-						uriVariablesMap);
+				
+				
+//				Room foundRoom = restTemplate.getForObject(findRoomUri,
+//						Room.class,
+//						uriVariablesMap);
+				Room foundRoom = searchRoom(room.getRoomNumber(), room.getMyPg());
 				if(foundRoom != null )
 				{
 					//dupliacate stop here
@@ -1127,13 +1171,320 @@ public class OwnerController
 	
 	//viewRooms
 	@GetMapping(value = "/viewRooms")
-	public ModelAndView viewRooms(ModelAndView modelAndView)
+	public ModelAndView viewRooms(ModelAndView modelAndView,HttpSession session)
 	{
-		modelAndView.setViewName("ViewRooms");
+		Pg pg = (Pg)session.getAttribute("pg");
 		
+		
+		//"findAllRoomsByPgId/{pgId}
+		
+		List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
+				List.class,
+				pg.getPgId());
+		
+		if(rooms == null || rooms.isEmpty())
+		{
+				String emptyPgMessageStr = "There are no rooms in your pg,please add ASAP to add InMates";
+			//	m.addAttribute("emptyPGMessage", emptyPGMessageStr);
+				modelAndView.addObject("emptyPgMessage", emptyPgMessageStr);
+		}
+		
+		modelAndView.addObject("rooms",rooms);
+		
+		modelAndView.setViewName("ViewRooms");
+
 		return modelAndView ;
 	}
+	
+	//openEditRoomView
+	@GetMapping(value="/openEditRoomView")
+	public ModelAndView openEditRoomView(ModelAndView modelAndView,
+			@RequestParam("roomId") long roomId)
+	{
+		try
+		{
+			//load Room
+			//findRoomById/{roomId}
+			System.out.println("\n openEditRoomView roomId = \n"+roomId);
+		
+			Room room = searchRoom(roomId);
+			
+			//send to editRoom view
+			modelAndView.addObject("room", room);
+			//return "EditRoom";
+			modelAndView.setViewName("EditRoom");
+			
+			return modelAndView ;
 
+			
+			/*
+			 * PGOwner pgOwnerBean = (PGOwner)hs.getAttribute("pgOwnerBean"); PG pgBean =
+			 * pgOwnerBean.getMyPG() ; Set<Room> roomsSet = pgBean.getRooms(); Room roomBean
+			 * = null ; for(Room r :roomsSet) { if(r.getRoomId() == roomId) { roomBean = r ;
+			 * } } if(roomBean == null) { throw new
+			 * RoomDoesNotExistExcepton("The room u r trying to edit no more exist"); } else
+			 * { m.addAttribute("roomBean", roomBean);
+			 * System.out.println("PGHC editRoom try "); return "EditRoom"; }
+			 */
+			
+		}
+//		catch(RoomDoesNotExistExcepton e)
+//		{
+//			m.addAttribute("errorMessage", e.getLocalizedMessage());
+//			return "OwnerHome";
+//		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			//m.addAttribute("errorMessage", e.getLocalizedMessage());
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+
+			//return "Error";
+			
+			modelAndView.setViewName("Error");
+			return modelAndView ;
+
+		}
+	}
+	
+	//updateRoom 
+	@PostMapping(value="/updateRoom")
+	public ModelAndView updateRoom(@Valid Room room,BindingResult result,
+			ModelAndView modelAndView,HttpSession session)
+	{
+		try
+		{
+			if(result.hasErrors())
+			{
+				//return "EditRoom";
+				System.out.println("-------------------------br falied  with invalid room = "+room);
+				modelAndView.setViewName("EditRoom");
+				return modelAndView ;
+			}
+			else
+			{
+				
+				System.out.println("-------------------------br passed with valid room = "+room);
+				//checck for duplicate room
+				Room searchedRoom = searchRoom(room.getRoomId());
+				
+				if(searchedRoom.getRoomNumber().equals(room.getRoomNumber()) == false)
+				{
+					
+					Room foundRoom = searchRoom(room.getRoomNumber(), room.getMyPg());
+					
+					if(foundRoom != null )
+					{
+						//dupliacate stop here
+						
+				    	throw new DuplicateRoomException();
+					}
+
+				}
+				//chek valid numberof bdes
+				int totalInMatesOfRoom = room.getRoomMates().size();
+				if(room.getNumberOfBeds() < totalInMatesOfRoom)
+				{
+					String inMatesOverFlowErrorMessageStr = "You'r trying to reduce the number of beds to = "+
+				     room.getNumberOfBeds()+" but there are still "+totalInMatesOfRoom+" InMates in that"
+				     		+ " room ,would u like to let them stay on teres or corridor ?";
+				     
+					throw new InMatesOverFlowInARoomException(inMatesOverFlowErrorMessageStr);
+				}
+				//else
+				//{
+					//nuber of bedsa re in range
+					//go on 
+					
+	           
+					//boolean isRoomUpdateRequired = false;
+					//passed room and existing in db room number matching
+//					if(searchedRoom.getRoomNumber().equals(room.getRoomNumber()))
+//					{
+//						//yes room number has not changed
+//						//go on
+//					
+//						isRoomUpdateRequired  = true;
+//						
+//					}
+					//else
+					//{
+						//he has changed the room number
+						//check is it colliding with any other of existing
+						//
+					
+					
+//						else
+//						{
+//							//updated room do not collid go on
+//							isRoomUpdateRequired = true;
+//							
+//						}
+						
+//						if(isRoomUpdateRequired)
+//						{
+//							
+//						}
+//						else
+//						{
+//							String errorMessageStr =" Due to some issues we couldnt update ur room,sorry";
+//							//however control never comes here
+//							modelAndView.addObject("errorMessage", errorMessageStr);
+//							modelAndView.setViewName("ViewRooms");
+//							return modelAndView ;
+//						}
+					//}
+						
+				//}
+				
+				restTemplate.put(ROOM_SERVICE_URI+"updateRoom",
+						room);
+				
+				
+				String roomUpdatedSuccessMessageStr = "The room details have been updated to ur wish";
+				
+				modelAndView.addObject("successMessage", roomUpdatedSuccessMessageStr);
+				modelAndView.setViewName("OwnerHome");
+				return modelAndView ;
+				
+			}
+		}
+		catch(InMatesOverFlowInARoomException e)
+		{
+//			m.addAttribute("errorMessage", e.getLocalizedMessage());
+//			return "EditRoom";
+			
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+			modelAndView.setViewName("EditRoom");
+			return modelAndView ;
+		}
+//		catch(RoomDoesNotExistExcepton |CanNotRemoveTheRoomException e)
+//		{
+//			//String errorMessageStr = "The room u r trying to edit no more exist";
+//			m.addAttribute("errorMessage", e.getLocalizedMessage());
+//			return "OwnerHome";
+//		}
+		catch (DuplicateRoomException e)
+		{
+			String duplicateRoomStr = "You'r trying to change room number to ="
+					+ " "+room.getRoomNumber()+" ,but unfortunatelly that room number already exist in ur Pg,"
+							+ " so pls give different number or let it be same number,TQ";
+			//m.addAttribute("errorMessage", duplicateRoomStr);
+			//return "EditRoom";
+			
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", duplicateRoomStr);
+			modelAndView.setViewName("EditRoom");
+			return modelAndView ;
+		}
+		catch(RuntimeException e)
+		{
+			//m.addAttribute("errorMessage", e.getLocalizedMessage());
+			//return "EditRoom";
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+			modelAndView.setViewName("EditRoom");
+			return modelAndView ;
+		}
+		catch (Exception e)
+		{
+			//m.addAttribute("errorMessage", e.getLocalizedMessage());
+			//return "Error";
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+			modelAndView.setViewName("Error");
+			return modelAndView ;
+		}
+	}
+	
+	//deleteRoom
+	@GetMapping(value = "/deleteRoom")
+	public ModelAndView openDeleteRoomView(ModelAndView modelAndView,
+			@RequestParam("roomId") long roomId)
+	{
+		try 
+		{
+			System.out.println("\n  deleteRoom with roomid= \n"+roomId);
+			Room room = searchRoom(roomId);
+		
+			modelAndView.addObject("room", room);
+			
+			modelAndView.setViewName("DeleteRoom");
+			
+			return modelAndView ;
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+			modelAndView.setViewName("Error");
+			return modelAndView ;
+		}
+	}
+	
+	//deleteRoom
+	//@DeleteMapping(value = "/deleteRoom")
+	@PostMapping(value = "/deleteRoom")
+	public ModelAndView deleteRoom(ModelAndView modelAndView,@RequestParam("roomId") long roomId)
+	{
+		try 
+		{
+			System.out.println("\n  deleteRoom with roomid= \n"+roomId);
+			
+			//check roomates are there 
+			Room room = searchRoom(roomId);
+			if(room != null)
+			{
+				if(room.getRoomMates().isEmpty())
+				{
+					//zero room mates 
+					//go on
+					restTemplate.delete(ROOM_SERVICE_URI+"deleteRoom/{roomId}", roomId);
+					
+					String roomRemovalSuccessMessageStr = "The room with room number = "
+					+room.getRoomNumber()+" "
+							+ " removed from ur Pg  ,Go to view rooms for confirmation";
+					
+					//m.addAttribute("roomRemovalSuccessMessage", roomRemovalSuccessMessageStr);
+					modelAndView.addObject("successMessage", roomRemovalSuccessMessageStr);
+
+					//return "OwnerHome";
+					modelAndView.setViewName("OwnerHome");
+					return modelAndView ;
+				}
+				else
+					throw new CanNotRemoveTheRoomException();
+
+			}
+			else
+				throw new RoomDoesNotExistExcepton("Room does not exist sorry to remove");
+			
+			
+
+		}
+		catch(CanNotRemoveTheRoomException e)
+		{
+			e.printStackTrace();
+			String cantRemoveRoomErrorMessageStr = "You'r trying to remove room in which there is/are still few InMates"
+					+ ",So we do not entertain you very sorry. "
+					+ "If you still want to continue first give "
+					+ "sendOff to those InMates of that room from PG";
+			//m.addAttribute("errorMessage", cantRemoveRoomErrorMessageStr);
+			//return "RemoveRoom";
+			
+			modelAndView.addObject("errorMessage", cantRemoveRoomErrorMessageStr);
+			modelAndView.setViewName("DeleteRoom");
+			return modelAndView ;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+			modelAndView.setViewName("Error");
+			return modelAndView ;
+		}
+	}
 	
 }
 

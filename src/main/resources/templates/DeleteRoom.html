@@ -1,0 +1,113 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+<head>
+<meta charset="UTF-8">
+<title>Remove Room</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+
+  
+
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+<h3>The followings are the details of your Room</h3>
+<pre>
+Warning :
+If there is/are  InMate/s in your room
+definitelly you cant remove room,still if you 
+wish to continue please first remove those/that InMate/s from room
+</pre>
+
+<!-- //<h4 align="center">${errorMessage }</h4> -->
+
+<!-- //<c:if test="${ roomBean != null}"> -->
+
+
+<!-- //<form action="removeRoom.owner"   method="POST"> -->
+
+<form th:if="${room != null}" action="#" th:action="@{/mypg/deleteRoom}"  method="POST">
+
+
+<!-- //<input type="hidden" name="roomId" value='${roomBean.roomId }'> -->
+
+<input type="hidden" name="roomId" th:value="${room.roomId }"/>
+
+
+<table align="center" border="1" bordercolor="maroon">
+
+<tr>
+<th >
+Room Number
+</th>
+
+<th>
+Total Beds
+</th>
+
+<th>
+Room Mates
+</th>
+
+<th>
+cost per bed
+</th>
+
+<th>
+Total vacancies
+</th>
+
+</tr>
+
+
+
+<tr>
+
+
+<td style="color: red;">
+<b th:text="${room.roomNumber }"></b>
+</td>
+
+
+
+<td style="color: red;">
+<b th:text="${room.numberOfBeds }"></b>
+</td>
+
+
+
+<!-- <td style="color: red;"> -->
+<!-- //<c:forEach var="inMateBean" items="${roomBean.roomMates}"> -->
+
+<td th:each="inMate: ${room.roomMates}">
+
+<b if test="${inMate ne null}" th:text="${inMate.firstName }"></b>
+
+<b th:text="${inMate.phoneNumber }"></b>
+
+</td>
+
+<td style="color: red;">
+<b th:text="${room.costPerBed }"></b>
+</td>
+
+<td>
+<label>Calculate by urself</label>
+
+</td>
+
+</tr>
+</table>
+<h3 align="center">
+
+<input type="submit" th:value="Remove_Room_permenetly" />
+</h3>
+
+</form>
+</body>
+</html>

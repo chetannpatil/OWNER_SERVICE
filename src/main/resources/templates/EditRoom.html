@@ -1,0 +1,124 @@
+   
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+<head>
+<meta charset="UTF-8">
+<title>Edit Room</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+
+<h3 align="center">Edit the room details and can add/remove InMate from/to room </h3>
+
+<!-- //<h4 align="center">${errorMessage }</h4> -->
+
+
+		
+
+
+<form th:if="${room != null}" action="#"
+		th:action="@{/mypg/updateRoom}" th:object="${room}" method="POST">
+
+
+<!-- <input type="hidden" name="roomId" th:value="${room.roomId }"> -->
+
+<input type="hidden" th:field="*{roomId}" /> 
+
+<input type="hidden" th:field="*{roomMates}" /> 
+
+<input type="hidden" th:field="*{myPg}" /> 
+
+<table align="center" border="0" bordercolor="maroon">
+
+<tr>
+
+<td>
+Room Number
+</td>
+
+<td>
+
+<input type="text" th:field="*{roomNumber}" />
+<label style="color:red" th:if="${#fields.hasErrors('roomNumber')}" th:errors="*{roomNumber}">
+</label>
+
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Total Beds
+</td>
+
+<td>
+
+<input type="text" th:field="*{numberOfBeds}" />
+<label	style="color:red" th:if="${#fields.hasErrors('numberOfBeds')}" th:errors="*{numberOfBeds}">
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Cost per bed
+</td>
+
+<td>
+<input type="text" th:field="*{costPerBed}" />
+<label style="color:red" th:if="${#fields.hasErrors('costPerBed')}" th:errors="*{costPerBed}">
+</label>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Total InMates in room
+</td>
+
+<td>
+//<label>${roomBean.roomMates.size() }</label>
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Total vacancies in room
+</td>
+
+<!-- <td th:text="${room.numberOfBeds - room.getRoomMates().size() }"> -->
+
+
+<!-- <label th:text="${room.numberOfBeds - room.getRoomMates().size() }"/> -->
+
+<!-- </td> -->
+
+</tr>
+
+<tr>
+<td colspan="2" align="center">
+<input type="submit" th:value="Update_ROOM"/> 
+
+</td>
+</tr>
+
+</table>
+</form>
+
+</body>
+</html>
