@@ -1,0 +1,208 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>ViewInMatesDetails</title>
+
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+ 
+</head>
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+
+<!-- //<c:if test="${empty inMatesSet }"> -->
+<!-- //<h3 align="center">${emptyRoomsMessage }</h3> -->
+<!-- //</c:if> -->
+
+
+<h3 th:if = "${inMates.size() <= 0}" th:text="${emptyRoomsMessage }"></h3>
+
+
+<!-- //<c:if test="${!empty inMatesSet }"> -->
+
+<!-- //<table align="center" border="1"> -->
+<table th:if = "${inMates.size() > 0 }" align="center" border="1" bordercolor="maroon">
+
+
+<thead>
+
+<tr>
+
+<th rowspan="2">
+FIRST NAME
+</th>
+
+<th rowspan="2">
+LAST NAME
+</th>
+
+<th rowspan="2">
+PHONE NUMBER
+</th>
+
+<th rowspan="2">
+AADHAAR NUMBER
+</th>
+
+<th rowspan="2">
+D.O.B
+</th>
+
+<th rowspan="2">
+OCCUPATION
+</th>
+
+<th rowspan="2">
+EMAIL
+</th>
+
+<th rowspan="2">
+DATE OF JOINING
+</th>
+
+<th rowspan="2">
+TOTAL COMPLAINTS RAISED BY HIM
+</th>
+
+<th rowspan="2">
+HIS ROOM NUMBER
+</th>
+
+<th colspan="6">
+ADDRESS
+</th>
+
+</tr>
+
+ <tr>
+  
+ <th>HOUSE NUMBER</th>
+<th>STREET </th>
+<th>DISTRICT</th>
+<th>STATE</th>
+<th>COUNTRY</th>
+<th>PIN</th>
+
+</tr>
+
+</thead>
+
+
+
+
+<!-- //</c:forEach var="inMateBean" items="${inMatesSet }"> -->
+
+<tr th:each="inMate: ${inMates}">
+
+<td>
+<label th:text="${room.firstName }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.lastName }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.phoneNumber }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.aadhaarNumber }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.dob }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.occupation }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.emailId }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.dateOfJoining }"></label>
+</td>
+
+
+<td>
+<label th:text="${inMate.myComplaints.size() }"></label>
+</td>
+
+<td>
+<!-- //<label>${inMateBean.myRoom.getRoomNumber()}</label> -->
+<label th:text="${inMate.myRoom }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.address.houseNumber }"></label>
+
+</td>
+
+<td>
+<label th:text="${inMate.address.street }"></label>
+</td>
+
+
+<td>
+<label th:text="${inMate.address.disrtict }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.address.state }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.address.country }"></label>
+</td>
+
+<td>
+<label th:text="${inMate.address.pin }"></label>
+</td>
+
+
+
+<td>
+<!-- //<form action="openEditInMateView.owner" method="post"> -->
+
+<form action="#" th:action="@{/mypg/openEditInMateView}" method="POST">
+
+<input type="hidden" name="inMateId" th:value="${inMateBean.inMateId }"/>
+
+<input type="submit" th:value="Edit_InMate">
+
+</form>
+
+</td>
+
+
+<td>
+
+<form action="#" th:action="@{/mypg/openRemoveInMateView}" method="POST">
+
+<input type="hidden" name="inMateId" th:value="${inMateBean.inMateId }"/>
+
+<input type="submit" th:value="Remove_InMate">
+
+</form>
+
+</td>
+
+
+
+
+
+
+
+</tr>
+
+
+</table>
+
+
+</body>
+</html>

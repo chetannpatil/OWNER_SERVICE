@@ -43,7 +43,7 @@ import io.chetan.exception.PasswordMissMatchException;
 import io.chetan.exception.PgAddressCanNotBeEmptyException;
 import io.chetan.exception.RoomDoesNotExistExcepton;
 import io.chetan.model.Address;
-
+import io.chetan.model.InMate;
 import io.chetan.model.Owner;
 import io.chetan.model.Pg;
 import io.chetan.model.Room;
@@ -70,6 +70,7 @@ public class OwnerController
 	private static final String PG_SERVICE_URI = "http://localhost:8082/pg/";
 	private static final String ROOM_SERVICE_URI = "http://localhost:8083/room/";
 
+	private static final String INMATE_SERVICE_URI = "http://localhost:8084/inMate/";
 	
 	//private static final String ERROR_PATH = "/error";
 	
@@ -1477,6 +1478,45 @@ public class OwnerController
 			modelAndView.setViewName("DeleteRoom");
 			return modelAndView ;
 		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+			modelAndView.setViewName("Error");
+			return modelAndView ;
+		}
+	}
+	
+	
+	//viewInMates
+	@GetMapping("/viewInMates")
+	public ModelAndView viewInMates(ModelAndView modelAndView,HttpSession session)
+	{
+		try
+		{
+			System.out.println("\n viewInMates()\n");
+			//get pgid from session
+			Pg pg = (Pg) session.getAttribute("pg");
+			
+			
+			//call Inmate micro service
+			List<InMate> inMates = restTemplate.getForObject(INMATE_SERVICE_URI+"findAllByPgId/{pgId}",
+					List.class,
+					pg.getPgId());
+			//load all inmates 
+			//check for empty collection
+			if(inMates.isEmpty())
+			{
+				String emptyRoomsMessageStr = "There'r no InMates in Pg yet,please add";
+				modelAndView.addObject("emptyRoomsMessage",emptyRoomsMessageStr);
+			}
+		
+			//add list to MNV and pass
+			modelAndView.addObject("inMates", inMates);
+			
+			modelAndView.setViewName("ViewInMates");
+			return modelAndView ;
+		} 
 		catch (Exception e)
 		{
 			e.printStackTrace();
