@@ -1,0 +1,129 @@
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>AddInMate</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+
+
+
+<!-- //<c:if test="${empty roomsSet }"> -->
+<!-- //<h3 align="center">${emptyPGMessage }</h3> -->
+<!-- //</c:if> -->
+
+
+<!-- //<c:if test="${!empty roomsSet }"> -->
+
+<!-- <h1  th:if = "${rooms.isEmpty()}"> -->
+<!-- empty room</h1> -->
+
+<!-- <h1  th:if = "${!rooms.isEmpty()}"> -->
+<!-- have inmates  room</h1> -->
+
+<div  th:if="${session.pg.getRooms().size() > 0}">
+
+<h2 align="center">Select a room from below to add a new InMate</h2>
+
+
+<!-- <table th:if = "${rooms.isE }" align="center" border="1" bordercolor="maroon"> -->
+<table  align="center" border="1" bordercolor="maroon">
+
+<tr style="color: maroon;">
+<th >
+Room Number
+</th>
+
+<th>
+Sharing(Max persons in this room)
+</th>
+
+<th>
+Currently how many people are staying here
+</th>
+
+<th>
+Cost
+</th>
+
+<th>
+Total vacancies
+</th>
+
+</tr>
+
+
+
+<!-- //<c:forEach var="roomBean" items="${roomsSet }"> -->
+<tr th:each="room: ${rooms}">
+
+<td style="color: red;">
+<b th:text="${room.roomNumber }"></b>
+</td>
+
+
+<td style="color: red;">
+<b th:text="${room.numberOfBeds }"></b>
+</td>
+
+<td style="color: red;">
+
+<b th:text="${room.roomMates.size() }"></b>
+
+</td>
+
+<td style="color: red;">
+<b th:text="${room.costPerBed }"></b>
+</td>
+
+
+
+
+
+
+
+<!-- <td th:text="${room.getRoomMates().size()} - ${room.numberOfBeds}"> -->
+<td th:text="${room.numberOfBeds} - ${room.roomMates.size()} ">
+
+<label>Calculate by urself roomMates</label>
+
+</td>
+
+
+<td >
+<!-- <td th:if = "${room.numberOfBeds > rooms.size()}" > -->
+<!-- <div th:if = "${room.numberOfBeds > rooms.size()}"> -->
+<!-- <div th:if = "${room.numberOfBeds} + '-' +  ${rooms.size()}}"> -->
+
+<!-- <div th:text = "${room.numberOfBeds} + '-' +  ${rooms.size()}}"> -->
+
+<!-- th:text="${case.caseCategoryName} + '-' + ${case.caseCategoryCode}" -->
+<div th:if = "${room.numberOfBeds} > ${room.roomMates.size()}">
+
+<!-- th:text="${case.caseCategoryName} - ${case.caseCategoryCode}"> -->
+
+ <form action="#" th:action="@{/mypg/addInMate}"  method="POST">
+
+<input type="hidden" name="roomId" th:value="${room.roomId }"/>
+
+<input type="hidden" name="roomNumber" th:value="${room.roomNumber }"/>
+
+<input type="submit" th:value="Add_here"/>
+</form>
+
+</div>
+
+</td>
+
+
+</tr>
+
+</table>
+</div>
+</body>
+</html>

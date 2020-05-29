@@ -1,96 +1,86 @@
-
-<!DOCTYPE html>
+ 
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
 <meta charset="UTF-8">
-<title>REGISTER PG OWNER</title>
-<script>
-var dateControl = document.querySelector('input[type="date"]');
-dateControl.value = '2017-06-01';
-</script>
-
+<title>AddInMate2</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
+
 <body>
-<h1 align="center">Please enter your details to create your account as a owner</h1>
-<pre>
-Note :
-Followed by your account creation you have to
-end-up by entering your PG details to complete 
-registration,else your registration will be auto-cancelled
-</pre>
+<div th:replace="OwnerHeader :: oh"></div>
 
-                                                    
-                                                                   
-<form action="#" th:action="@{/mypg/registerOwner}" th:object="${owner}" method="POST"> 
 
+
+
+<!-- //<s:form action="addInMate2.owner"  modelAttribute="inMateBean" method="POST"> -->
+ <form  action="#" th:action="@{/mypg/createInMate}"  th:object="${inMate}" method="POST">
+
+ <input type="hidden"  th:field="*{myRoom}"/>
+ <input type="hidden" name="myPg"  th:value="${session.pg.getPgId()}">
+ 
+<!--   <input type="hidden" th:field="myPg"  th:value="${session.pg.getPgId()}"> -->
+ 
 
 <h1 align="center">MANDATORY FIELDS</h1>
+
 <table align="center" border="0" bordercolor="maroon">
+
+<tr>
+<td>
+YOUR GUY WILL B IN THIS ROOM
+</td>
+<td>
+<input type="text" name="roomNumber" value="${roomNumber }" readonly="readonly"  th:value ="${roomNumber}"/>
+</td>
+<td><b style="color: red;" th:value ="${roomNumberErrorMessage}"></b></td>
+
+
+</tr>
 
 <tr>
 <td>
 FIRST NAME
 </td>
 <td>
-
-
-
 <input type="text" th:field="*{firstName}"/>     
-<!-- <label th:if="${#fields.hasErrors('userId')}"  th:errors="*{userId}"> </label>             -->
 <label th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"> </label>   
-  
+
 
 </td>
 </tr>
+
 <tr>
 <td>
 PHONE NUMBER
 </td>
 <td>
-
 <input type="text" th:field="*{phoneNumber}"/>       
 <label th:if="${#fields.hasErrors('phoneNumber')}"   th:errors="*{phoneNumber}"> </label>
 </td>
 
-
 <td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
 
-
-</tr>
-
-
-<tr>
-<td>
-PASSWORD  
-</td>
-<td>
-
-<input type="password" th:field="*{password}"/>
-<label th:if="${#fields.hasErrors('password')}"  th:errors="*{password}"></label>
-</td>
 </tr>
 
 <tr>
 <td>
-REPEAT-PASSWORD  
+DATE OF JOINING  
 </td>
+
 <td>
-
-
-<input type="password" th:field="*{repeatPassword}"/>
-<label th:if="${#fields.hasErrors('repeatPassword')}" th:errors="*{repeatPassword}"></label>
+<input type="text" th:field="*{dateOfJoining}"/>       
+<label th:if="${#fields.hasErrors('dateOfJoining')}"   th:errors="*{dateOfJoining}"> </label>
 </td>
 
 
-<td><b style="color: red;" th:text="${pswErrorMessage }"></b></td>
-</tr>
+<td><b style="color: red;" th:text="${dateOfJoiningErrorMessage }"></b></td>
 
+</tr>
 
 </table>
-
-
 
 <h1 align="center">OPTIONAL FIELDS</h1>
 <table align="center" border="0" bordercolor="maroon" >
@@ -104,19 +94,6 @@ LAST NAME
 <label th:if="${#fields.hasErrors('lastName')}"  th:errors="*{lastName}"> </label>
 </td>
 </tr>
-
-<tr>
-<td>
-E-MAIL
-</td>
-
-<td>
-<input type="text" th:field="*{emailId}"/>
-<label th:if="${#fields.hasErrors('emailId')}"  th:errors="*{emailId}"> </label>
-</td>
-</tr>
-
-
 
 <tr>
 <td>
@@ -145,6 +122,27 @@ AADHAAR NUMBER
 </tr>
 
 
+<tr>
+<td>
+OCCUPATION
+</td>
+<td>
+<input type="text" th:field="*{occupation}"/>
+<label th:if="${#fields.hasErrors('occupation')}"  th:errors="*{occupation}"> </label>
+</td>
+</tr>
+
+
+<tr>
+<td>
+E-MAIL
+</td>
+
+<td>
+<input type="text" th:field="*{emailId}"/>
+<label th:if="${#fields.hasErrors('emailId')}"  th:errors="*{emailId}"> </label>
+</td>
+</tr>
 
 <tr>
 <td colspan="2" align="center" >ADDRESS  
@@ -157,8 +155,8 @@ HOUSE-NUMBER
 </td>
 <td>
 
-<input type="text" th:field="*{address.houseNumber}"/>
-<label th:if="${#fields.hasErrors('address.houseNumber')}"  th:errors="*{address.houseNumber}" > </label>
+<!-- <input type="text" th:field="*{address.houseNumber}"/> -->
+<!-- <label th:if="${#fields.hasErrors('address.houseNumber')}"  th:errors="*{address.houseNumber}" > </label> -->
 
 </td>
 </tr>
@@ -225,8 +223,6 @@ PIN
 
 <tr>
 <td colspan="2" align="center">
-
-
 <input type="submit" th:value="submit"/>
 <input type="reset" th:value="reset"/>
 </td>
@@ -234,7 +230,11 @@ PIN
 
 
 </table>
-</form>
+
+
+
+
+
 
 </body>
 </html>

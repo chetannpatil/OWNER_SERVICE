@@ -4,19 +4,12 @@ import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 
-import org.apache.tomcat.jni.Address;
 import org.springframework.format.annotation.DateTimeFormat;
 
 
@@ -41,6 +34,7 @@ public class InMate implements Comparable<InMate>
 	
 	private String aadhaarNumber ;
 	
+	//@Embedded
 	private Address address;
 	
 	private String occupation ;
@@ -229,13 +223,6 @@ public class InMate implements Comparable<InMate>
 
 
 
-	@Override
-	public String toString() {
-		return "InMate [inMateId=" + inMateId + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber="
-				+ phoneNumber + ", aadhaarNumber=" + aadhaarNumber + ", address=" + address + ", occupation="
-				+ occupation + ", emailId=" + emailId + ", dob=" + dob + ", dateOfJoining=" + dateOfJoining
-				+ ", myBills=" + myBills + ", myComplaints=" + myComplaints + ", myRoom=" + myRoom + "]";
-	}
 
 	@Override
 	public int compareTo(InMate inMate)
@@ -329,6 +316,15 @@ public class InMate implements Comparable<InMate>
 
 	public void setMyPg(Long myPg) {
 		this.myPg = myPg;
+	}
+
+	@Override
+	public String toString() {
+		return "InMate [inMateId=" + inMateId + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber="
+				+ phoneNumber + ", aadhaarNumber=" + aadhaarNumber + ", address=" + address + ", occupation="
+				+ occupation + ", emailId=" + emailId + ", dob=" + dob + ", dateOfJoining=" + dateOfJoining
+				+ ", myBills=" + myBills + ", myComplaints=" + myComplaints + ", myRoom=" + myRoom + ", myPg=" + myPg
+				+ ", password=" + password + "]";
 	}
 	
 	

@@ -170,29 +170,29 @@ public class Room implements Comparable<Room>
 		this.numberOfBeds = this.numberOfBeds - noOfbeds ;
 	}
 
-//	public boolean addInMate(InMate inMate)
-//	{
-//		if(inMate != null)
-//		{
-//			//check vacancy
-//			if(this.numberOfBeds > this.roomMates.size())
-//			{
-//				if(this.roomMates.add(inMate.getInMateId()) == false)
-//				{
-//					return false;
-//					//throw new DuplicateInMateException("Could not add InMate "+inMate.getFirstName()+" to the room");
-//				}
-//				else
-//					return true ;
-//			}
-//			else
-//			{
-//				throw new InMatesOverFlowInARoomException("There is no vacancy in the room = "+this.roomNumber);
-//			}
-//		}
-//		else
-//			return false;
-//	}
+	public boolean addInMate(long inMateId)
+	{
+		//if(inMate != null)
+		//{
+			//check vacancy
+			if(this.numberOfBeds > this.roomMates.size())
+			{
+				if(this.roomMates.add(inMateId) == false)
+				{
+					return false;
+					//throw new DuplicateInMateException("Could not add InMate "+inMate.getFirstName()+" to the room");
+				}
+				else
+					return true ;
+			}
+			else
+			{
+				throw new InMatesOverFlowInARoomException("There is no vacancy in the room = "+this.roomNumber);
+			}
+		//}
+		//else
+			//return false;
+	}
 	
 	//removeInMate() ?
 	

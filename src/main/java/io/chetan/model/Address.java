@@ -141,7 +141,7 @@ public class Address
 	}
 
 	public String getHouseNumber() {
-		return houseNumber;
+		return this.houseNumber;
 	}
 
 	public void setHouseNumber(String houseNumber) {
@@ -220,6 +220,10 @@ public class Address
 		//for()
 			//throw new PGAddressCanNotBeEmptyException("HouseNumber")
 		return addressList ;
+	}
+
+	public void setAddresId(long addresId) {
+		this.addresId = addresId;
 	}
 	
 	//removeExtraSpace

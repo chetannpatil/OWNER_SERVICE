@@ -37,6 +37,7 @@ import io.chetan.exception.CouldNotLoadYourPgException;
 import io.chetan.exception.DuplicateOwnerException;
 import io.chetan.exception.DuplicatePgException;
 import io.chetan.exception.DuplicateRoomException;
+import io.chetan.exception.EmptyPgException;
 import io.chetan.exception.InMatesOverFlowInARoomException;
 import io.chetan.exception.InvalidCredentialsException;
 import io.chetan.exception.PasswordMissMatchException;
@@ -139,6 +140,17 @@ public class OwnerController
 		return room ;
 	}
 	
+	//loadallrooms
+	private List<Room> loadAllRoomsOfAPg(long pgId)
+	{
+		
+		List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
+				List.class,
+				pgId);
+		
+		return rooms ;
+	}
+	
 	// private Logger
 	@GetMapping("/")
 	public ModelAndView welcome() {
@@ -176,7 +188,8 @@ public class OwnerController
 	}
 
 	@PostMapping(value = "/registerOwner")
-	public ModelAndView registerOwner(@Valid Owner owner, BindingResult br, HttpSession hs, ModelAndView modelAndView) {
+	public ModelAndView registerOwner(@Valid Owner owner, BindingResult br,
+			HttpSession hs, ModelAndView modelAndView) {
 		System.out.println("\n OwnerController registerOwner()\n");
 		// ModelAndView modelAndView = new ModelAndView();
 		if (br.hasErrors()) {
@@ -353,8 +366,10 @@ public class OwnerController
 							// set owner for pg
 							pg.setMyOwner(owner.getOwnerId());
 
-							pg = restTemplate.postForObject("http://localhost:8082/pg/createPg", pg, Pg.class);
-							
+
+//							pg = restTemplate.postForObject("http://localhost:8082/pg/createPg", pg, Pg.class);
+							pg = restTemplate.postForObject(PG_SERVICE_URI+"createPg", pg, Pg.class);
+
 							System.out.println("\n after seting owner to createdPg = \n" + pg);
 							// if pg created successfully then only proceed to create owner else stop
 							if (pg != null && pg instanceof Pg) 
@@ -681,7 +696,8 @@ public class OwnerController
 	// public ModelAndView updateOwner(@Valid Owner owner,BindingResult
 	// br,ModelAndView modelAndView)
 	@PostMapping(value = "/updateOwner")
-	public ModelAndView updateOwner(@Valid Owner owner, BindingResult br, ModelAndView modelAndView, HttpSession hs) {
+	public ModelAndView updateOwner(@Valid Owner owner, BindingResult br,
+			ModelAndView modelAndView, HttpSession hs) {
 		if (br.hasErrors()) {
 			System.out.println("\n updateOwner br.hasErrors() with Invalid owner = \n" + owner);
 			// return "EditOwnerDetails";
@@ -793,7 +809,8 @@ public class OwnerController
 	// updatePg
 	// @RequestMapping(value="/updatePG",method=RequestMethod.POST)
 	@PostMapping(value = "/updatePg")
-	public ModelAndView updatePGDetails(@Valid Pg pg, BindingResult br, ModelAndView modelAndView,
+	public ModelAndView updatePgDetails(@Valid Pg pg, BindingResult br,
+			ModelAndView modelAndView,
 			HttpSession session) {
 		try {
 			if (br.hasErrors()) {
@@ -1179,10 +1196,10 @@ public class OwnerController
 		
 		//"findAllRoomsByPgId/{pgId}
 		
-		List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
-				List.class,
-				pg.getPgId());
-		
+//		List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
+//				List.class,
+//				pg.getPgId());
+		List<Room> rooms = loadAllRoomsOfAPg(pg.getPgId());
 		if(rooms == null || rooms.isEmpty())
 		{
 				String emptyPgMessageStr = "There are no rooms in your pg,please add ASAP to add InMates";
@@ -1197,6 +1214,8 @@ public class OwnerController
 		return modelAndView ;
 	}
 	
+	
+
 	//openEditRoomView
 	@GetMapping(value="/openEditRoomView")
 	public ModelAndView openEditRoomView(ModelAndView modelAndView,
@@ -1523,6 +1542,170 @@ public class OwnerController
 			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
 			modelAndView.setViewName("Error");
 			return modelAndView ;
+		}
+	}
+	
+	//addInMate
+	@GetMapping(value = "/addInMate")
+	public ModelAndView openAddInMate(ModelAndView modelAndView,HttpSession session)
+	{
+		try
+		{
+			System.out.println("\n openAddInMate()\n");
+
+			//check is there atleast 1 room in pg then only allow 
+			Pg pg = (Pg)session.getAttribute("pg");
+			
+			System.out.println("\n openAddInMate session pg = \n"+pg);
+			
+			if(pg.getRooms().isEmpty())
+			{
+				System.out.println("\n openAddInMate  pg empty  = \n"+pg.getRooms().size());
+				throw new EmptyPgException();
+			}
+			List<Room> rooms = loadAllRoomsOfAPg(pg.getPgId());
+			
+			if(rooms == null || rooms.isEmpty())
+			{
+				throw new EmptyPgException();
+
+			}
+			//add rooms
+			modelAndView.addObject("rooms",rooms);
+
+			//add inmate to satisfy model attribute in thymleaf
+		//	modelAndView.addObject("inMate", new InMate());
+			modelAndView.setViewName("AddInMate");
+			return modelAndView ;
+
+
+		} 
+		catch (EmptyPgException e)
+		{
+			e.printStackTrace();
+			System.out.println("\n openaddInMate () Exception e \n");	
+			
+			String emptyPgMessageStr = "There'r no rooms at all in ur Pg, so first add a room "
+					+ " to add InMate";
+			modelAndView.addObject("errorMessage",emptyPgMessageStr);
+			//modelAndView.addObject("roomsSet", roomsSet);
+			//return "OwnerHome";
+			//modelAndView.setViewName("AddInMate");
+			modelAndView.setViewName("OwnerHome");
+
+			return modelAndView ;
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.out.println("\n openaddInMate () Exception e \n");
+            
+			modelAndView.setViewName("Error");
+			
+			return modelAndView ;
+
+		}
+	}
+	
+	//addInMate post
+	@PostMapping(value = "/addInMate")
+	public ModelAndView addInMate(@RequestParam long roomId, @RequestParam String roomNumber,
+			ModelAndView modelAndView)
+	{
+			//System.out.println("\n addInMate ()  br passwed with valid inmate =  \n"+inMate);
+		try 
+		{
+			System.out.println("\n addInMate ()  e \n");
+            InMate inMate = new InMate();
+            
+			//Inmat inmat = new Inmat();
+           inMate.setMyRoom(roomId);
+            //inmat.setMyRoom(roomId);
+
+            //inMate.set
+            modelAndView.addObject("roomNumber", roomNumber);
+
+            //no need to pass roomid since we have set it  to inmate bean
+           modelAndView.addObject("inMate",inMate);
+            //modelAndView.addObject("inmat",inmat);
+
+			modelAndView.setViewName("AddInMate2");
+
+			return modelAndView ;
+
+		}
+		catch (Exception e) 
+		{
+			   e.printStackTrace();
+			   modelAndView.setViewName("Error");
+				
+				return modelAndView ;
+		}
+	}
+	
+	@PostMapping(value = "/createInMate")
+	public ModelAndView createInMate(@Valid InMate inMate,BindingResult result,
+			ModelAndView modelAndView,@RequestParam String roomNumber)
+	{
+		if(result.hasErrors())
+		{
+			System.out.println("\n br failed with inmate = \n "+inMate);
+			
+			modelAndView.addObject("inMate",inMate);
+			
+			modelAndView.setViewName("AddInMate2");
+			
+			return modelAndView ;
+		}
+		else
+		{
+			try
+			{
+				System.out.println("\n br passed with inmate = \n "+inMate);
+				//no need to add pg to inmate
+				
+				//Pg pg = (Pg)session.getAttribute("pg");
+				//inMate.setMyPg(pg.getPgId());
+				
+				//create inmate
+				//call inmate mcior service n crate inmate
+				InMate createdInMate = restTemplate.postForObject(INMATE_SERVICE_URI+"create",
+						inMate,
+						InMate.class);
+				
+				System.out.println("\n created imate = \n"+createdInMate);
+				//load room by geting roomid from inmate
+				Room room = searchRoom(inMate.getMyRoom());
+				
+				
+				//add inmate to room's roommate collection
+				room.addInMate(createdInMate.getInMateId());
+				
+				System.out.println("\n after adding inamte to room = \n"+room);
+				
+				//update room
+				//micro rvice
+			    restTemplate.put(ROOM_SERVICE_URI+"updateRoom", room);
+			    
+			    
+				String inMateAddedSuccessMessageStr =" InMate = "+inMate.getFirstName()+" has been placed"
+						+ " in room number = "+roomNumber;
+				
+				modelAndView.addObject("successMessage", inMateAddedSuccessMessageStr);
+
+				//return "OwnerHome";
+				modelAndView.setViewName("OwnerHome");
+				
+				return modelAndView ;
+
+			}
+			catch (Exception e)
+			{
+				  e.printStackTrace();
+				   modelAndView.setViewName("Error");
+					
+					return modelAndView ;
+			}
 		}
 	}
 	

@@ -97,7 +97,7 @@ ADDRESS
 <tr th:each="inMate: ${inMates}">
 
 <td>
-<label th:text="${room.firstName }"></label>
+<label th:text="${inMate.firstName }"></label>
 </td>
 
 <td>
@@ -135,7 +135,8 @@ ADDRESS
 
 <td>
 <!-- //<label>${inMateBean.myRoom.getRoomNumber()}</label> -->
-<label th:text="${inMate.myRoom }"></label>
+<!-- <label th:text="${inMate.myRoom }"></label> -->
+<label>under PROGRESS</label>
 </td>
 
 <td>
@@ -171,7 +172,7 @@ ADDRESS
 
 <form action="#" th:action="@{/mypg/openEditInMateView}" method="POST">
 
-<input type="hidden" name="inMateId" th:value="${inMateBean.inMateId }"/>
+<input type="hidden" name="inMateId" th:value="${inMate.inMateId }"/>
 
 <input type="submit" th:value="Edit_InMate">
 
@@ -184,7 +185,7 @@ ADDRESS
 
 <form action="#" th:action="@{/mypg/openRemoveInMateView}" method="POST">
 
-<input type="hidden" name="inMateId" th:value="${inMateBean.inMateId }"/>
+<input type="hidden" name="inMateId" th:value="${inMate.inMateId }"/>
 
 <input type="submit" th:value="Remove_InMate">
 
