@@ -1,6 +1,7 @@
 package io.chetan.model;
 
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Pattern;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.annotation.NumberFormat.Style;
 
+import io.chetan.controller.OwnerController;
 import io.chetan.exception.InMatesOverFlowInARoomException;
 
 public class Room implements Comparable<Room>
@@ -53,6 +55,8 @@ public class Room implements Comparable<Room>
 	@NotNull(message="you must reveal room rent per head for this room")
 	@NumberFormat(style=Style.CURRENCY)
 	private Double costPerBed ;
+	
+	private static final Logger LOGGER = Logger.getLogger(Room.class.getName());
 	
 	//constructor
 	public Room()
@@ -194,7 +198,34 @@ public class Room implements Comparable<Room>
 			//return false;
 	}
 	
-	//removeInMate() ?
+	//removeInMate()
+	
+	public boolean removeInMate(long inMateId)
+	{
+		System.out.println("\n Room removeInMate\n");
+		LOGGER.info("\n Room removeInMate\n");
+		if(this.roomMates.size() <= 0)
+		{
+			System.out.println("\n no one there to remove\n");
+			LOGGER.info("\n Room -removeInMate - no one there to remove\n");
+			return false;
+		}
+		else
+		{
+			if(this.roomMates.remove(inMateId))
+			{
+				System.out.println("\n yes  removed inamte with id = \n"+inMateId);
+				LOGGER.info("\n Room -removeInMate - yes  removed inamte with id\n");
+				return true ;
+			}
+			else
+			{
+				System.out.println("\n could not remove\n");
+				LOGGER.info("\n Room- removeInMate -could not remove\n");
+				return false;
+			}
+		}
+	}
 	
 	//validations
 	private static void validateNoOfBeds(int noOfbeds)

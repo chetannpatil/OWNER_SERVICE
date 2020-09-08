@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,6 +37,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import io.chetan.exception.CanNotRemoveTheRoomException;
 import io.chetan.exception.CouldNotLoadYourPgException;
+import io.chetan.exception.DuplicateInMateException;
 import io.chetan.exception.DuplicateOwnerException;
 import io.chetan.exception.DuplicatePgException;
 import io.chetan.exception.DuplicateRoomException;
@@ -73,9 +77,15 @@ public class OwnerController
 
 	private static final String INMATE_SERVICE_URI = "http://localhost:8084/inMate/";
 	
+	private static final Logger LOGGER = Logger.getLogger(OwnerController.class.getName());
+	
+	//org.apache.logging.log4j.Logge
+	
+	
 	//private static final String ERROR_PATH = "/error";
 	
 	//private static final String ERROR_PATH = "mypg/error";
+	
 	/*
 	 * @Override public String getErrorPath() {
 	 * System.out.println("\n OwnerController  getErrorPath() \n"); return
@@ -102,13 +112,69 @@ public class OwnerController
 //		return modelAndView;
 //	}
 	
-	//redundant methdos
+	//redundant methods
 	
-	public Room searchRoom(String roomNumber,long myPg)
+	private void updateRoom(Room room)
+	{
+		LOGGER.info("OC -updateRoom-  for room = "+room);
+		restTemplate.put(ROOM_SERVICE_URI+"updateRoom", room);
+	}
+	//loadallrooms
+		private List<Room> loadAllRoomsOfAPg(HttpSession session)
+		{
+			Pg pg = (Pg)session.getAttribute("pg");
+			
+			System.out.println("\n loadAllRoomsOfAPg session pg = \n"+pg);
+			
+			if(pg.getRooms() == null || pg.getRooms().isEmpty())
+			{
+				System.out.println("\n loadAllRoomsOfAPg  pg is empty  = \n");
+				throw new EmptyPgException();
+			}
+			List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
+					List.class,
+					pg.getPgId());
+			
+			return rooms ;
+		}
+		
+	private List<InMate> loadAllInMatesOfAPg(HttpSession session)
+	{
+		System.out.println("\n oc loadAllInMatesOfAPg  = \n");
+		
+		//get pgid from session
+		Pg pg = (Pg) session.getAttribute("pg");
+		
+		//before goingto inmateservice check pg has rooms atleast
+		if(pg.getRooms() == null ||pg.getRooms().isEmpty())
+		{
+			System.out.println("\n loadAllRoomsOfAPg  pg is empty  = \n");
+			throw new EmptyPgException();
+		}
+		
+		List<InMate> list = restTemplate.getForObject(INMATE_SERVICE_URI+"findAll/{pgId}",
+				List.class,
+				pg.getPgId());
+		
+		return list ;
+	}
+	
+	private boolean isDuplicateOwner(String phoneNumber)
+	{
+		List<Owner> ownerslist = ownerService.findByPhoneNumber(phoneNumber);
+		
+		if (ownerslist == null || ownerslist.size() == 0)
+		{
+			return false;
+		}
+		return true ;
+	}
+	
+	private Room searchRoom(String roomNumber,long myPg)
 	{
 		System.out.println("\n searchRoom \n");
 		
-		String findRoomUri =ROOM_SERVICE_URI+"/findRoomByRoomNumberAndMyPg/"
+		String findRoomUrl =ROOM_SERVICE_URI+"/findRoomByRoomNumberAndMyPg/"
 				+ "roomNumber/{roomNumber}/"
 				+ "myPg/{myPg}";
 		
@@ -123,7 +189,7 @@ public class OwnerController
 
 		
 		
-		Room foundRoom = restTemplate.getForObject(findRoomUri,
+		Room foundRoom = restTemplate.getForObject(findRoomUrl,
 				Room.class,
 				uriVariablesMap);
 		
@@ -140,16 +206,7 @@ public class OwnerController
 		return room ;
 	}
 	
-	//loadallrooms
-	private List<Room> loadAllRoomsOfAPg(long pgId)
-	{
-		
-		List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
-				List.class,
-				pgId);
-		
-		return rooms ;
-	}
+	
 	
 	// private Logger
 	@GetMapping("/")
@@ -216,9 +273,11 @@ public class OwnerController
 				}
 				// check for duplicate owner here
 
-				List<Owner> ownerslist = ownerService.findByPhoneNumber(owner.getPhoneNumber());
-
-				if (ownerslist == null || ownerslist.size() == 0) {
+			
+				boolean isDuplicateOwner = isDuplicateOwner(owner.getPhoneNumber());
+				
+				if(isDuplicateOwner == false )
+				{
 					// owner does not exist , carry on
 					// do not create a pgOwnerbean now
 					// redirect to crate pg page
@@ -277,13 +336,19 @@ public class OwnerController
 				// m.addAttribute("errorMessage",errorStr+" i.e."+e.getLocalizedMessage());
 				// return "Error";
 
-				modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+				//modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+				
+				modelAndView.addObject("errorMessage", e.getMessage());
+				
 				modelAndView.setViewName("Error");
+				
 				return modelAndView;
 			}
 
 		}
 	}
+
+
 
 	// @Valid Owner owner
 	// @ModelAttribute("pgOwnerBean")@Valid Owner pgOwnerBean
@@ -291,15 +356,15 @@ public class OwnerController
 	// cretaePg
 	// @{/mypg/createPg}
 	@PostMapping("/createPg")
-	public ModelAndView createPg(@Valid Pg pg, BindingResult br, ModelAndView modelAndView, HttpSession hs)
+	public ModelAndView createPg(@Valid Pg pg, BindingResult br, ModelAndView modelAndView, HttpSession session)
 			throws Exception 
 	{
 		//// ModelMap mp = new ModelMap();
 		// mp.add
 		// find pgOwnerBean from HSR pgOwnerBean
-		Owner owner = (Owner) hs.getAttribute("owner");
+		Owner owner = (Owner) session.getAttribute("owner");
 
-		System.out.println("from HS owner = " + owner);
+		System.out.println("from session owner = " + owner);
 		if (br.hasErrors())
 		{
 			System.out.println("\n createPg() br.hasErrors\n");
@@ -388,10 +453,21 @@ public class OwnerController
 							
 								 System.out.println("\n updatedOwner \n"+updatedOwner);
 
-								 //set to hs
-								 hs.setAttribute("owner", updatedOwner);
+								 //no need to set to session coz we r logging out immedeatley after creating Pg
+								// session.setAttribute("owner", updatedOwner);
 								 //pg als
-								 hs.setAttribute("pg", pg);
+								// session.setAttribute("pg", pg);
+								 
+								 //log out
+								    session.invalidate();
+									String signOutStr = "Hello "+owner.getFirstName()+" You've successfully created ur Pg "
+											+pg.getName()+ " & signed out .This completes registration... Pls login if u want to "
+													+ "use our sevices, TQ";
+
+									modelAndView.addObject("signOutMessage", signOutStr);
+									modelAndView.setViewName("Welcome");
+									return modelAndView;
+								 
 							}
 							else
 							{
@@ -1130,6 +1206,10 @@ public class OwnerController
 					restTemplate.put(PG_SERVICE_URI+"/updatePg", pg);
 					
 					String roomAdditionSuccessMessageStr = "Room with room Number = "+room.getRoomNumber()+" added to ur pg ";
+					
+					//is it requeired to add pg back to session *
+					//session.setAttribute("pg", pg);
+					
 					modelAndView.addObject("successMessage", roomAdditionSuccessMessageStr);
 					//return "OwnerHome";
 					
@@ -1150,8 +1230,8 @@ public class OwnerController
 			catch(DuplicateRoomException e)
 			{
 				System.out.println("catch (DuplicateRoomException e)");
-				String duplicateRoomStr = "I wonder u r real owner of this Pg ? "
-						+" & u do not know that room with "
+				String duplicateRoomStr = "U have forgotten that  "
+						+"  room with "
 						+ " "+room.getRoomNumber()+" already exist in ur Pg, ?"
 								+ " so pls give different number for ur new room. ";
 				
@@ -1191,7 +1271,7 @@ public class OwnerController
 	@GetMapping(value = "/viewRooms")
 	public ModelAndView viewRooms(ModelAndView modelAndView,HttpSession session)
 	{
-		Pg pg = (Pg)session.getAttribute("pg");
+		//Pg pg = (Pg)session.getAttribute("pg");
 		
 		
 		//"findAllRoomsByPgId/{pgId}
@@ -1199,19 +1279,51 @@ public class OwnerController
 //		List<Room> rooms = restTemplate.getForObject(ROOM_SERVICE_URI+"findAllRoomsByPgId/{pgId}",
 //				List.class,
 //				pg.getPgId());
-		List<Room> rooms = loadAllRoomsOfAPg(pg.getPgId());
-		if(rooms == null || rooms.isEmpty())
+		try
 		{
-				String emptyPgMessageStr = "There are no rooms in your pg,please add ASAP to add InMates";
+			List<Room> rooms = loadAllRoomsOfAPg(session);
+			/*
+			 * if(rooms == null || rooms.isEmpty()) { String emptyPgMessageStr =
+			 * "There are no rooms in your pg,please add ASAP to add InMates"; //
+			 * m.addAttribute("emptyPGMessage", emptyPGMessageStr);
+			 * modelAndView.addObject("emptyPgMessage", emptyPgMessageStr); }
+			 */
+			
+			modelAndView.addObject("rooms",rooms);
+			
+			modelAndView.setViewName("ViewRooms");
+
+			return modelAndView ;
+		} 
+		catch (EmptyPgException e)
+		{
+			e.printStackTrace();
+			System.out.println("\n openaddInMate () Exception e \n");	
+			
+			String emptyPgMessageStr = "There are no rooms in your pg,please add ASAP to add InMates";
 			//	m.addAttribute("emptyPGMessage", emptyPGMessageStr);
-				modelAndView.addObject("emptyPgMessage", emptyPgMessageStr);
+//				modelAndView.addObject("emptyPgMessage", emptyPgMessageStr);
+			
+			modelAndView.addObject("errorMessage", emptyPgMessageStr);
+			
+				modelAndView.setViewName("OwnerHome");
+				
+				//modelAndView.setViewName("ViewRooms");
+			
+				return modelAndView ;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+
+			//return "Error";
+			
+			modelAndView.setViewName("Error");
+			return modelAndView ;
 		}
 		
-		modelAndView.addObject("rooms",rooms);
 		
-		modelAndView.setViewName("ViewRooms");
-
-		return modelAndView ;
 	}
 	
 	
@@ -1514,14 +1626,12 @@ public class OwnerController
 		try
 		{
 			System.out.println("\n viewInMates()\n");
-			//get pgid from session
-			Pg pg = (Pg) session.getAttribute("pg");
 			
 			
+				
 			//call Inmate micro service
-			List<InMate> inMates = restTemplate.getForObject(INMATE_SERVICE_URI+"findAllByPgId/{pgId}",
-					List.class,
-					pg.getPgId());
+			List<InMate> inMates = loadAllInMatesOfAPg(session);
+					
 			//load all inmates 
 			//check for empty collection
 			if(inMates.isEmpty())
@@ -1536,6 +1646,25 @@ public class OwnerController
 			modelAndView.setViewName("ViewInMates");
 			return modelAndView ;
 		} 
+		catch (EmptyPgException e)
+		{
+			//re-direct to ownerhome since there are no rooms at all in a pg no worth of forwarding to ViewInMates
+			e.printStackTrace();
+			System.out.println("\n viewInMates () Exception e \n");	
+			
+			String emptyPgMessageStr = "There are no rooms at all in your pg....so InMates cant hang in corridoor I hope";
+			//	m.addAttribute("emptyPGMessage", emptyPGMessageStr);
+				
+			//modelAndView.addObject("emptyPgMessage", emptyPgMessageStr);
+				
+				modelAndView.addObject("errorMessage", emptyPgMessageStr);
+				
+			modelAndView.setViewName("OwnerHome");
+				
+				//modelAndView.setViewName("ViewInMates");
+			
+				return modelAndView ;
+		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
@@ -1546,6 +1675,7 @@ public class OwnerController
 	}
 	
 	//addInMate
+	//selectRoomToAddInMate
 	@GetMapping(value = "/addInMate")
 	public ModelAndView openAddInMate(ModelAndView modelAndView,HttpSession session)
 	{
@@ -1554,26 +1684,20 @@ public class OwnerController
 			System.out.println("\n openAddInMate()\n");
 
 			//check is there atleast 1 room in pg then only allow 
-			Pg pg = (Pg)session.getAttribute("pg");
+		
+			//Retrieve all rooms of that pg
+			List<Room> rooms = loadAllRoomsOfAPg(session);
 			
-			System.out.println("\n openAddInMate session pg = \n"+pg);
-			
-			if(pg.getRooms().isEmpty())
-			{
-				System.out.println("\n openAddInMate  pg empty  = \n"+pg.getRooms().size());
-				throw new EmptyPgException();
-			}
-			List<Room> rooms = loadAllRoomsOfAPg(pg.getPgId());
-			
-			if(rooms == null || rooms.isEmpty())
-			{
-				throw new EmptyPgException();
-
-			}
-			//add rooms
+			/*
+			 * if(rooms == null || rooms.isEmpty()) { throw new EmptyPgException();
+			 * 
+			 * }
+			 */
+			//pass rooms to view so that owner can choose which room should be allocated to this tenant
+			//add rooms to view
 			modelAndView.addObject("rooms",rooms);
 
-			//add inmate to satisfy model attribute in thymleaf
+			//no need to add inmate to satisfy model attribute in thymleaf bcs we r doing so in next screen
 		//	modelAndView.addObject("inMate", new InMate());
 			modelAndView.setViewName("AddInMate");
 			return modelAndView ;
@@ -1600,6 +1724,8 @@ public class OwnerController
 			e.printStackTrace();
 			System.out.println("\n openaddInMate () Exception e \n");
             
+			modelAndView.addObject("errorMessage", e.getMessage());
+			
 			modelAndView.setViewName("Error");
 			
 			return modelAndView ;
@@ -1608,26 +1734,40 @@ public class OwnerController
 	}
 	
 	//addInMate post
+	
 	@PostMapping(value = "/addInMate")
 	public ModelAndView addInMate(@RequestParam long roomId, @RequestParam String roomNumber,
-			ModelAndView modelAndView)
+			ModelAndView modelAndView,HttpSession session)
 	{
-			//System.out.println("\n addInMate ()  br passwed with valid inmate =  \n"+inMate);
+			//System.out.println("\n addInMate ()  br passed with valid inmate =  \n"+inMate);
 		try 
 		{
 			System.out.println("\n addInMate ()  e \n");
-            InMate inMate = new InMate();
+           
             
-			//Inmat inmat = new Inmat();
-           inMate.setMyRoom(roomId);
-            //inmat.setMyRoom(roomId);
+			    InMate inMate = new InMate();
+			    
+			    session.setAttribute("roomId", roomId);
+			    //keep roomid in session
+			
+			  // no need since we'r giving roomid to session 
+			   // inMate.setMyRoom(roomId);
+			  //password will be set in cretainmate as last step b4 saveinmat.setMyRoom(roomId); //set password
+			 // inMate.setPassword(InMate.generatePassword());
+			 
+			    
+            //keep roomNumber in session so that all api can access it & no need to pass to model evrytime
+            //modelAndView.addObject("roomNumber", roomNumber);
+			    session.setAttribute("roomNumber", roomNumber);
 
-            //inMate.set
-            modelAndView.addObject("roomNumber", roomNumber);
-
-            //no need to pass roomid since we have set it  to inmate bean
-           modelAndView.addObject("inMate",inMate);
-            //modelAndView.addObject("inmat",inmat);
+            //no  need to pass roomid since we have  set it  to inmate bean 
+           // modelAndView.addObject("roomId", roomId);
+           // InMate inMate =
+            //add inmate 
+            LOGGER.info("going to add inamte to model = "+inMate);
+            System.out.println("going to add inamte to model = "+inMate);
+           modelAndView.addObject("inMate", inMate);
+            //modelAndView.addObject("inmate",inmate);
 
 			modelAndView.setViewName("AddInMate2");
 
@@ -1637,20 +1777,30 @@ public class OwnerController
 		catch (Exception e) 
 		{
 			   e.printStackTrace();
+				modelAndView.addObject("errorMessage", e.getMessage());
+				
 			   modelAndView.setViewName("Error");
 				
 				return modelAndView ;
 		}
 	}
 	
+//	@PostMapping(value = "/createInMate")
+//	public ModelAndView createInMate(@Valid InMate inMate,BindingResult result,
+//			ModelAndView modelAndView,@RequestParam String roomNumber,HttpSession session)
+	
 	@PostMapping(value = "/createInMate")
 	public ModelAndView createInMate(@Valid InMate inMate,BindingResult result,
-			ModelAndView modelAndView,@RequestParam String roomNumber)
+			ModelAndView modelAndView,HttpSession session)
 	{
 		if(result.hasErrors())
 		{
-			System.out.println("\n br failed with inmate = \n "+inMate);
+			System.out.println("\n createInMate br failed with inmate = \n "+inMate);
 			
+			//add back room number 
+			// modelAndView.addObject("roomNumber", roomNumber);
+			 
+			 LOGGER.info("createInMate - br failed with inmate & added back same  = "+inMate);
 			modelAndView.addObject("inMate",inMate);
 			
 			modelAndView.setViewName("AddInMate2");
@@ -1661,53 +1811,518 @@ public class OwnerController
 		{
 			try
 			{
-				System.out.println("\n br passed with inmate = \n "+inMate);
+				System.out.println("\n createInMate  br passed with inmate = \n "+inMate);
+				LOGGER.info("\n createInMate br passed with inmate = \n "+inMate);
+				
 				//no need to add pg to inmate
 				
 				//Pg pg = (Pg)session.getAttribute("pg");
 				//inMate.setMyPg(pg.getPgId());
 				
-				//create inmate
-				//call inmate mcior service n crate inmate
-				InMate createdInMate = restTemplate.postForObject(INMATE_SERVICE_URI+"create",
-						inMate,
-						InMate.class);
+				//set rest of the states 
+		          // inMate.setMyRoom(roomId);
+		            //inmat.setMyRoom(roomId);
+		           //set password
 				
-				System.out.println("\n created imate = \n"+createdInMate);
-				//load room by geting roomid from inmate
-				Room room = searchRoom(inMate.getMyRoom());
+				//check wether phonenumber clashes with owner number of same pg
+				Owner owner = (Owner) session.getAttribute("owner");
+				if(owner.getPhoneNumber().equals(inMate.getPhoneNumber()))
+				{
+					String errorMessage = "R U willing to become Tenant of ur own PG, The InMate u r trying to add is yourself"
+							+ " please change his phone number if I am wrong";
+					throw new DuplicateOwnerException(errorMessage);
+				}
 				
 				
-				//add inmate to room's roommate collection
-				room.addInMate(createdInMate.getInMateId());
+				//check wether phonenumber clashes with any other inmate's phonenumber of the same PG
 				
-				System.out.println("\n after adding inamte to room = \n"+room);
+//				restTemplate.getForEntity(INMATE_SERVICE_URI+"find",
+//						responseType,
+//						uriVariables)
+				String searchInMateURL = INMATE_SERVICE_URI+"/find/{phoneNumber}/{pgId}";
 				
-				//update room
-				//micro rvice
-			    restTemplate.put(ROOM_SERVICE_URI+"updateRoom", room);
-			    
-			    
-				String inMateAddedSuccessMessageStr =" InMate = "+inMate.getFirstName()+" has been placed"
-						+ " in room number = "+roomNumber;
+//				InMate searchedInMate = restTemplate.getForObject(searchInMateURL,
+//						InMate.class,
+//						inMate.getPhoneNumber(),inMate.getMyPg());
 				
-				modelAndView.addObject("successMessage", inMateAddedSuccessMessageStr);
+				Boolean isInMateExist = restTemplate.getForObject(searchInMateURL,
+						Boolean.class,
+						inMate.getPhoneNumber(),inMate.getMyPg());
+				if(isInMateExist == false)
+				{
+					//continue adding 
+					//set password as last step b4 saving :) coz we have not set it in addinmate api
+					  inMate.setPassword(InMate.generatePassword()); 
+			           
+					  //set roomid i.e myRoom to inmate
+					  inMate.setMyRoom((Long) session.getAttribute("roomId"));
+					  
+			           System.out.println("\nb4 createInamte inmate  dosnt exist & after setting all states = \n"+inMate);
+			           LOGGER.info("\nb4 createInamte inmate dosnt exist & after setting all states = \n"+inMate);
+					//create inmate
+					//call inmate micro service n crate inmate
+					InMate createdInMate = restTemplate.postForObject(INMATE_SERVICE_URI+"create",
+							inMate,
+							InMate.class);
+					
+					System.out.println("\n OC created imate = \n"+createdInMate);
+					
+					LOGGER.info("\n OC created imate = \n"+createdInMate);
+					
+					//cant load room by getting roomid from inmate
+					//Room room = searchRoom(inMate.getMyRoom())
+					
+					//load room by passin roomid from session
+					Room room = searchRoom((long)session.getAttribute("roomId"));
+					
+					//add inmate to room's roommate collection
+					room.addInMate(createdInMate.getInMateId());
+					
+					System.out.println("\n after adding inamte to room = \n"+room);
+					
+					LOGGER.info("\n after adding inamte to room = \n"+room);
+					
+					//update room
+					//micro rvice
+				    //restTemplate.put(ROOM_SERVICE_URI+"updateRoom", room)
+				    
+					//call updateroom 
+					updateRoom(room);
+				    
+				    LOGGER.info("\n after resttemplate.put of ROOm , room = \n"+room);
+					String successMessage =" InMate = "+inMate.getFirstName()+" has been placed"
+							+ " in room number = ";
+					
+					modelAndView.addObject("successMessage", successMessage);
 
-				//return "OwnerHome";
-				modelAndView.setViewName("OwnerHome");
+					//remove attributes from session
+					session.removeAttribute("roomId");
+					
+					session.removeAttribute("roomNumber");
+					
+					//return "OwnerHome";
+					modelAndView.setViewName("OwnerHome");
+					
+					return modelAndView ;
+				}
+				else
+				{
+					//stop by
+					LOGGER.info("duplicate inmate = "+inMate);
+					throw new DuplicateInMateException();
+				}
 				
+			}
+			catch(DuplicateOwnerException e)
+			{
+				//m.addAttribute("roomNumber", roomNumber);
+				//m.addAttribute("errorMessage",e.getLocalizedMessage());
+			//	return "AddInMate2";
+				//add back room number 
+				LOGGER.info("createInMate DuplicateOwnerException e = "+e.getMessage());
+				
+				//modelAndView.addObject("roomNumber", roomNumber);
+				 
+				modelAndView.addObject("errorMessage",e.getLocalizedMessage());
+				 
+				LOGGER.info("createInMate DuplicateOwnerException sending inamte  to AddInMate2 via model = "+inMate);
+				
+				modelAndView.addObject("inMate",inMate);
+				
+				
+				System.out.println("\n after adding inmate to model inamte = \n\n\n "+inMate);
+				
+				modelAndView.setViewName("AddInMate2");
+
 				return modelAndView ;
+			}
+			catch(DuplicateInMateException e)
+			{
+				e.printStackTrace();
+				
+				LOGGER.info("createInMate DuplicateInMateException e = "+e.getMessage());
 
+				
+				String errorMessage ="InMate with phonenumber "+inMate.getPhoneNumber()+"   already exists "
+						+ "Please add  his right phone number";
+				//m.addAttribute("roomNumber", roomNumber);
+				
+				// modelAndView.addObject("roomNumber", roomNumber);
+				 
+				//m.addAttribute("errorMessage",duplicateInMateErrorMessageStr);
+				
+				modelAndView.addObject("errorMessage",errorMessage);
+				
+				//return "AddInMate2";
+				LOGGER.info("createInMate DuplicateInMateException sending inamte  to AddInMate2 via model = "+inMate);
+				
+				modelAndView.addObject("inMate",inMate);
+				
+				System.out.println("\n after adding inmate to model inamte = \n\n\n "+inMate);
+
+				modelAndView.setViewName("AddInMate2");
+				return modelAndView ;
 			}
 			catch (Exception e)
 			{
 				  e.printStackTrace();
+					LOGGER.info("createInMate Exception e = "+e.getMessage());
+
+					modelAndView.addObject("errorMessage", e.getMessage());
+					
 				   modelAndView.setViewName("Error");
 					
 					return modelAndView ;
 			}
+			finally
+			{
+				LOGGER.info("creatInmate finally not removing attributes from session " );
+				
+				System.out.println("\n creatInmate finally not removing attributes from session \n");
+//				//remove attributes from session
+//				session.removeAttribute("roomId");
+//				
+//				session.removeAttribute("roomNumber");
+				
+			}
 		}
 	}
 	
-}
+	//editInMate  openEditInMate 
+	@GetMapping(value = "editInMate")
+	public ModelAndView openEditInMate(@RequestParam("inMateId") long inMateId,ModelAndView modelAndView,
+			HttpSession session)
+	{
+		try
+		{
+			
+			//load InMate 
+			InMate inMate = restTemplate.getForObject(INMATE_SERVICE_URI+"/find/{inMateId}",
+					InMate.class,
+					inMateId);
+			
+			//add inmate to Model
+			modelAndView.addObject("inMate", inMate);
+			
+			System.out.println("\n openEditInMate passing this inmate to edit = \n"+inMate);
+			
+			//add roomNumber to model
+			//read Room from Room Micro-service
+			
+			Room room = searchRoom(inMate.getMyRoom());
+			
+			modelAndView.addObject("roomNumber", room.getRoomNumber());
+			
+			// no need session.setAttribute("roomNumber", room.getRoomNumber());
+			
+			modelAndView.setViewName("EditInMate");
+			
+			return modelAndView ;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println("openEditInMate Exception e = \n"+e.getLocalizedMessage());
+			modelAndView.addObject("errorMessage", e.getMessage());
+			
+			modelAndView.setViewName("Error");
+				
+			return modelAndView ;
+		}
+	}
+	
+//	//updateInMate
+//		@PostMapping(value = "/updateInMate")
+//		public ModelAndView updateInMate(@Valid InMate inMate,BindingResult result,
+//				ModelAndView modelAndView,
+//				HttpSession session,
+//				@RequestParam("roomNumber") String roomNumber)
+//		{
+//			System.out.println("oc updateInMate with inamte = \n\n"+inMate);
+//			System.out.println("roomnumber = \n "+roomNumber);
+//			modelAndView.setViewName("Error");
+//			//"/find/phoneNumber/{phoneNumber}/pgId/{pgId}
+//			String searchInMateURL = INMATE_SERVICE_URI+"/find/{phoneNumber}/{pgId}";
+//			
+//			InMate searchedInMate = restTemplate.getForObject(searchInMateURL,
+//					InMate.class,
+//					inMate.getPhoneNumber(),inMate.getMyPg());
+//			
+//			System.out.println("\n searchedinmate = \n"+searchedInMate);
+//			
+//			modelAndView.addObject("errorMessage", "succes from updateiNmate api test with inamte = "+inMate.toString());
+//			
+//			return modelAndView ;
+//		}
+	
+	//updateInMate @RequestParam("roomNumber") String roomNumber
+	@PostMapping(value = "/updateInMate")
+	public ModelAndView updateInMate(@Valid InMate inMate,BindingResult result,
+			ModelAndView modelAndView,
+			HttpSession session,
+			@RequestParam String roomNumber)
+	{
+		if(result.hasErrors())
+		{
+			System.out.println("\n updateInMate BindingResult failed br = \n"+result);
+			//System.out.println("PGHC -> updateInMate br has errors ");
+			modelAndView.addObject("roomNumber",roomNumber);
+			//return "EditInMate";
+			modelAndView.setViewName("EditInMate");
+			return modelAndView ;
+		}
+		else
+		{
+			System.out.println("\n  BindingResult  pzssed with inamte = \n"+inMate);
+			try
+			{
+				System.out.println("\n updateInMate try \n");
+				//no need since we'r not allowing to change phonenumber bcs its login id  ,Check for duplicate
+				
+				//no need since we'r not allowing to change phonenumber bcs its login id  ,check is it onwer's number
+				//Owner owner = (Owner)session.getAttribute("owner");
+				
+				/*
+				 * if(owner.getPhoneNumber().equals(inMate.getPhoneNumber())) { String
+				 * errorMessage =inMate.getPhoneNumber()+" is your own phone number " +
+				 * " please either change his phone number to other or keep the old one"; throw
+				 * new DuplicateOwnerException(errorMessage); } //no need since we'r not
+				 * allowing to change phonenumber bcs its login id, check is it any other
+				 * Imate's phoneNumber //of same PG
+				 * 
+				 * InMate searchedInMate =
+				 * restTemplate.getForObject(INMATE_SERVICE_URI+"find/{phoneNumber}/{pgId}",
+				 * InMate.class, inMate.getPhoneNumber(),inMate.getMyPg());
+				 *
+				
+				if(searchedInMate == null)
+				{
+					//its unique phone number so proceed
+					
+				}
+				else
+				{
+					//duplicate Inmate
+					throw new DuplicateInMateException();
+				}*/
+				System.out.println("going to update inmate = "+inMate);
+				
+				restTemplate.put(INMATE_SERVICE_URI+"update", inMate);
+				
+                modelAndView.addObject("successMessage","ur inMate's details successfully updated pls check");
+				
+				modelAndView.setViewName("OwnerHome");
+				
+				return modelAndView ;
+//				modelAndView.setViewName("OwnerHome");
+//				return modelAndView ;
+			}
+			/*
+			 * catch(DuplicateOwnerException e) { //m.addAttribute("roomNumber",
+			 * roomNumber); modelAndView.addObject("roomNumber", roomNumber);
+			 * //m.addAttribute("errorMessage",e.getLocalizedMessage());
+			 * modelAndView.addObject("errorMessage",e.getLocalizedMessage()); //return
+			 * "EditInMate"; modelAndView.setViewName("EditInMate");
+			 * 
+			 * return modelAndView; } catch(DuplicateInMateException e) { String
+			 * errorMessage ="U r trying to change InMate's phone number = " +
+			 * " "+inMate.getPhoneNumber()+" which belongs to other InMate of your own PG  "
+			 * ;
+			 * 
+			 * //m.addAttribute("errorMessage",errorMessage);
+			 * modelAndView.addObject("errorMessage", errorMessage); //return "EditInMate";
+			 * modelAndView.setViewName("EditInMate");
+			 * 
+			 * return modelAndView; }
+			 */
+			catch (Exception e) 
+			{
+				
+				System.out.println("\n updateInMate catch (Exception e) \n");
+				e.printStackTrace();
+				
+				modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+	}
+	
+	@PostMapping(value = "/confirmDeleteInMate")
+	public ModelAndView confirmDeleteInMate(@RequestParam long inMateId, ModelAndView modelAndView,
+			@RequestParam String firstName ,
+			@RequestParam String phoneNumber,
+			HttpSession session,
+			@RequestParam long myRoom)
+	{
+		try
+		{
+			System.out.println("\n confirmDeleteInMate try with inmate name ,phno ,inmateid =  \n"
+		+firstName+" & "+phoneNumber+ " & "+inMateId);
+
+			//adding roomid myRoom to session 
+			session.setAttribute("roomId", myRoom);
+			
+			String confirmDeleteInMateMessage ="R U sure u wanna delete "+firstName+" "+
+		     phoneNumber+" from ur PG permenently ?";
+			
+			modelAndView.addObject("confirmDeleteInMateMessage", confirmDeleteInMateMessage);
+			
+	           //add also inmateid back to model so that it can delete/cancel
+			
+			modelAndView.addObject("inMateId", inMateId);
+			
+			//add all stuffs which u have added to satisfy ViewInmates view
+			List<InMate> inMates = loadAllInMatesOfAPg(session);
+			
+			//load all inmates 
+			//check for empty collection * since we r deleting there must be a inate atleast
+//			if(inMates.isEmpty())
+//			{
+//				String emptyRoomsMessageStr = "There'r no InMates in Pg yet,please add";
+//				modelAndView.addObject("emptyRoomsMessage",emptyRoomsMessageStr);
+//			}
+		
+			//add list to MNV and pass
+			modelAndView.addObject("inMates", inMates);
+			
+			//modelAndView.setViewName("ViewInMates");
+			//return modelAndView ;
+						
+		
+			modelAndView.setViewName("ViewInMates");
+			
+			return modelAndView ;
+			
+		}
+		catch (Exception e)
+		{
+			System.out.println("\n confirmDeleteInMate catch (Exception e) \n");
+			e.printStackTrace();
+			
+			modelAndView.addObject("errorMessage", e.getMessage());
+			
+			modelAndView.setViewName("Error");
+				
+			return modelAndView ;
+		}
+	}
+	
+	//cancellDeleteInMate was not implemented since cancelling leads to show all available inamates
+	// and hence redirected to ViewInmates from view itslef
+	
+	//deleteInMate
+	@PostMapping(value = "/deleteInMate")
+	public ModelAndView deleteInMate(@RequestParam long inMateId,ModelAndView modelAndView,
+			HttpSession session)
+	{
+		try 
+		{
+			System.out.println("\n deleteInMate try with inametId = \n"+inMateId);
+			
+			//restTemplate.delete(ROOM_SERVICE_URI+"deleteRoom/{roomId}", roomId);
+			
+			//  /delete/{inMateId}
+			
+			
+//			restTemplate.delete(INMATE_SERVICE_URI+"delete/{inMateId}",inMateId);
+			
+			//remove inmate from room
+			LOGGER.info("\n \n remove inmate from room");
+			
+			long roomId = (long)session.getAttribute("roomId");
+			LOGGER.info("\n got roomid from session = "+roomId);
+			
+			//search room to remove inmate from it
+			Room vacatingRoom = searchRoom(roomId);
+			
+			boolean isInMateRemoved = vacatingRoom.removeInMate(inMateId);
+			
+			if(isInMateRemoved)
+			{
+				//yes removed 
+				LOGGER.info("\n \n deleteInMate -  yes removed  inmate "+inMateId+" from room = "+roomId);
+				
+				//update room
+				//restTemplate.put(ROOM_SERVICE_URI+"updateRoom", vacatingRoom)
+				
+				updateRoom(vacatingRoom);
+				
+				// ? is it possible to directly send request to room micro service to remove inmate
+				//from the room by sending roomid & inmate id
+				
+				restTemplate.delete(INMATE_SERVICE_URI+"delete/"+inMateId);
+				
+				System.out.println("going to call viMewInMates api locally");
+				//viewInMates(modelAndView,session);
+				
+				LOGGER.info("\nafter delete from inmatemicro servce\n");
+				modelAndView.addObject("successMessage", "Ur unwanted inmate has been deleted from ur Pg successfully");
+				
+				
+			}
+			else
+			{
+				LOGGER.info("\nCould not remove  inmate = \n"+inMateId+" \n from room = "+roomId);
+				
+				String errorMessage = "Could not remove ur inmate as of now, pls try agian after sometime" ;
+				modelAndView.addObject("errorMessage",errorMessage);
+			}
+			modelAndView.setViewName("OwnerHome");
+			
+			return modelAndView ;
+			
+			
+		} 
+		catch (Exception e) 
+		{
+			System.out.println("\n deleteInMate catch (Exception e) \n");
+			e.printStackTrace();
+			
+			modelAndView.addObject("errorMessage", e.getMessage());
+			
+			modelAndView.setViewName("Error");
+				
+			return modelAndView ;
+		}
+	}
+	
+	/*
+	 * //deleteInMate
+	 * 
+	 * @PostMapping(value = "/deleteInMate") public void deleteInMate(@RequestParam
+	 * long inMateId,ModelAndView modelAndView, HttpSession session) { try {
+	 * System.out.println("\n deleteInMate try with inametId = \n"+inMateId);
+	 * 
+	 * //restTemplate.delete(ROOM_SERVICE_URI+"deleteRoom/{roomId}", roomId);
+	 * 
+	 * // /delete/{inMateId}
+	 * 
+	 * 
+	 * // restTemplate.delete(INMATE_SERVICE_URI+"delete/{inMateId}",inMateId);
+	 * 
+	 * restTemplate.delete(INMATE_SERVICE_URI+"delete/"+inMateId);
+	 * System.out.println("going to call viMewInMates api locally");
+	 * //viewInMates(modelAndView,session);
+	 * 
+	 * //modelAndView.addObject("successMessage",
+	 * "Ur unwanted inmate has been deleted from ur Pg successfully");
+	 * 
+	 * //modelAndView.setViewName("OwnerHome");
+	 * 
+	 * //return modelAndView ; viewInMates(modelAndView, session); } catch
+	 * (Exception e) { System.out.println("\n deleteInMate catch (Exception e) \n");
+	 * e.printStackTrace();
+	 * 
+	 * //modelAndView.addObject("errorMessage", e.getMessage());
+	 * 
+	 * //modelAndView.setViewName("Error");
+	 * 
+	 * //return modelAndView ; } }
+	 */
+	
+}//end of main
 

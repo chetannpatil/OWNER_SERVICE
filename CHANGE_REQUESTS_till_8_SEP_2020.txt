@@ -1,0 +1,55 @@
+iNMATE MICRO SERVICE
+IINMATE POJO
+add roomNumber has a & ALSO IT AFFECTS -//read Room - WHEREEVER readroom() is there
+ no need to laod roomnumber  from roomservice just use getter of InMate pojo
+-editInmate() api
+
+i have addedd roomnumber to session ,- remove it n make it to request
+thus affects updateInMate() api
+------------------------------------------------------------------
+____________________________________________________________________________________________________________
+OwnerMicro servcie
+-owner contrlloer
+--openEditInMate
+//read Room - no need to laod roomnumber  from roomservice just use getter of InMate pojo
+
+-shiftInmate
+--from one room to another
+------------------------------------------------------------------
+
+//redundant methods - static or instance
+
+------------------------------------------------------------------
+editInmate() api
+
+i have addedd roomnumber to session ,- remove it n make it to request
+thus affects updateInMate() api
+------------------------------------------------------------------
+viewInamtes.html
+-dateOfJoining
+--display only dd-mm-yyyy were as it is whole time
+
+2 lable comaplaints = align center
+------------------------------------------------------------------
+openAddInMate
+url is addInMate - is it good if we make it selectROomToAddInMate
+- since we r not adding immedeatley , we r just opening addInmate view in that all rooms ll be shown ...so
+
+____________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

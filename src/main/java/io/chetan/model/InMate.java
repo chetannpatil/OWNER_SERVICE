@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -34,7 +35,7 @@ public class InMate implements Comparable<InMate>
 	
 	private String aadhaarNumber ;
 	
-	//@Embedded
+	@Embedded
 	private Address address;
 	
 	private String occupation ;

@@ -98,9 +98,10 @@ Total vacancies
 <!-- <label th:text="${room.numberOfBeds - room.roomMates.size() }" th:value="${room.numberOfBeds - room.roomMates.size() }"> -->
 
 
-<td>
-<label>Calculate by urself</label>
 
+
+<td th:text="${room.numberOfBeds} - ${room.roomMates.size()} ">
+<!-- <label>Calculate by urself</label> -->
 </td>
 
 <td>

@@ -18,11 +18,21 @@
 <!-- //<s:form action="addInMate2.owner"  modelAttribute="inMateBean" method="POST"> -->
  <form  action="#" th:action="@{/mypg/createInMate}"  th:object="${inMate}" method="POST">
 
- <input type="hidden"  th:field="*{myRoom}"/>
+<!--  <input type="hidden"  th:field="*{myRoom}"/> -->
+
+<!--  <input type="hidden"  name="myRoom" th:value="${roomId}" /> -->
+ 
  <input type="hidden" name="myPg"  th:value="${session.pg.getPgId()}">
  
 <!--   <input type="hidden" th:field="myPg"  th:value="${session.pg.getPgId()}"> -->
  
+<!--  testing wether has a set in addinmate api reflect or not -->
+ 
+<!--  myRoom :roomid = from thymleaf<input type="text" readonly="readonly" th:field="*{myRoom}"/> -->
+
+<!-- <label  th:value ="${inmate.myRoom}" ></label> -->
+<!-- <label  th:value ="${inmate.getMyRoom()}" ></label> -->
+<!-- <label  th:value ="${inmate}" ></label> -->
 
 <h1 align="center">MANDATORY FIELDS</h1>
 
@@ -32,8 +42,14 @@
 <td>
 YOUR GUY WILL B IN THIS ROOM
 </td>
-<td>
-<input type="text" name="roomNumber" value="${roomNumber }" readonly="readonly"  th:value ="${roomNumber}"/>
+<td style="color:green;">
+<!-- <input type="text" name="roomNumber"  readonly="readonly"  th:value ="${roomNumber}"/> -->
+<!-- <label  th:value ="${roomNumber}" ></label> -->
+
+<!--  <input type="hidden" name="myPg"  th:value="${session.roomNumber}"> -->
+<!--  <label  th:value ="${session.roomNumber}" ></label> -->
+ 
+ <input type="text" readonly="readonly" th:value="${session.roomNumber}">
 </td>
 <td><b style="color: red;" th:value ="${roomNumberErrorMessage}"></b></td>
 
@@ -230,10 +246,6 @@ PIN
 
 
 </table>
-
-
-
-
 
 
 </body>

@@ -70,22 +70,23 @@ TOTAL COMPLAINTS RAISED BY HIM
 HIS ROOM NUMBER
 </th>
 
-<th colspan="6">
+<!-- <th colspan="6"> -->
+<th>
 ADDRESS
 </th>
 
 </tr>
 
- <tr>
+<!--  <tr> -->
   
- <th>HOUSE NUMBER</th>
-<th>STREET </th>
-<th>DISTRICT</th>
-<th>STATE</th>
-<th>COUNTRY</th>
-<th>PIN</th>
+<!--  <th>HOUSE NUMBER</th> -->
+<!-- <th>STREET </th> -->
+<!-- <th>DISTRICT</th> -->
+<!-- <th>STATE</th> -->
+<!-- <th>COUNTRY</th> -->
+<!-- <th>PIN</th> -->
 
-</tr>
+<!-- </tr> -->
 
 </thead>
 
@@ -125,12 +126,12 @@ ADDRESS
 </td>
 
 <td>
-<label th:text="${inMate.dateOfJoining }"></label>
+<label th:text="${inMate.dateOfJoining.toString().substring(0,10) }"></label>
 </td>
 
 
 <td>
-<label th:text="${inMate.myComplaints.size() }"></label>
+<label th:text-align="center"  th:text="${inMate.myComplaints.size() }"></label>
 </td>
 
 <td>
@@ -141,36 +142,40 @@ ADDRESS
 
 <td>
 <label th:text="${inMate.address.houseNumber }"></label>
-
-</td>
-
-<td>
 <label th:text="${inMate.address.street }"></label>
-</td>
-
-
-<td>
 <label th:text="${inMate.address.disrtict }"></label>
-</td>
-
-<td>
 <label th:text="${inMate.address.state }"></label>
-</td>
-
-<td>
 <label th:text="${inMate.address.country }"></label>
-</td>
-
-<td>
 <label th:text="${inMate.address.pin }"></label>
 </td>
+
+<!-- <td> -->
+<!-- <label th:text="${inMate.address.street }"></label> -->
+<!-- </td> -->
+
+
+<!-- <td> -->
+<!-- <label th:text="${inMate.address.disrtict }"></label> -->
+<!-- </td> -->
+
+<!-- <td> -->
+<!-- <label th:text="${inMate.address.state }"></label> -->
+<!-- </td> -->
+
+<!-- <td> -->
+<!-- <label th:text="${inMate.address.country }"></label> -->
+<!-- </td> -->
+
+<!-- <td> -->
+<!-- <label th:text="${inMate.address.pin }"></label> -->
+<!-- </td> -->
 
 
 
 <td>
 <!-- //<form action="openEditInMateView.owner" method="post"> -->
 
-<form action="#" th:action="@{/mypg/openEditInMateView}" method="POST">
+<form action="#" th:action="@{/mypg/editInMate}" method="GET">
 
 <input type="hidden" name="inMateId" th:value="${inMate.inMateId }"/>
 
@@ -183,9 +188,15 @@ ADDRESS
 
 <td>
 
-<form action="#" th:action="@{/mypg/openRemoveInMateView}" method="POST">
+<form action="#" th:action="@{/mypg/confirmDeleteInMate}" method="POST">
 
 <input type="hidden" name="inMateId" th:value="${inMate.inMateId }"/>
+
+<input type="hidden" name="phoneNumber" th:value="${inMate.phoneNumber }"/>
+
+<input type="hidden" name="firstName" th:value="${inMate.firstName }"/>
+
+<input type="hidden" name="myRoom" th:value="${inMate.myRoom }"/>
 
 <input type="submit" th:value="Remove_InMate">
 
@@ -203,7 +214,30 @@ ADDRESS
 
 
 </table>
+<!-- <h3 th:if = "${deleteInMateMessage != null && deleteInMateMessage.length() > 0 }"></h3> -->
 
+<div  style="background-color:red;color:white;width:510px; height:160px;position:absolute;left: 0;right: 0;margin: auto;" 
+th:if = "${confirmDeleteInMateMessage != null && confirmDeleteInMateMessage.length() > 0 }">
 
+<h2 th:text="${confirmDeleteInMateMessage}" ></h2>
+
+<form action="#" th:action="@{/mypg/deleteInMate}" method="POST">
+
+<input type="hidden" name="inMateId" th:value="${inMateId }"/>
+
+<input type="submit" th:value="YES">
+
+</form>
+
+<!-- <form action="#" th:action="@{/mypg/cancellDeleteInMate}" method="POST"> -->
+<!-- cancelling deleteinamte will lead to show all inmates of the pg so redirecting to viewinamtes -->
+<form action="#" th:action="@{/mypg/viewInMates}" method="GET">
+
+<!-- <input type="hidden" name="inMateId" th:value="${inMateId }"/> -->
+
+<input type="submit" th:value="NO">
+
+</form>
+</div>
 </body>
 </html>
