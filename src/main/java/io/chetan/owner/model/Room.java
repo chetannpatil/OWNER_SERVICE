@@ -1,4 +1,4 @@
-package io.chetan.model;
+package io.chetan.owner.model;
 
 import java.util.Set;
 import java.util.logging.Logger;
@@ -16,8 +16,10 @@ import javax.validation.constraints.Pattern;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.annotation.NumberFormat.Style;
 
-import io.chetan.controller.OwnerController;
 import io.chetan.exception.InMatesOverFlowInARoomException;
+
+
+
 
 public class Room implements Comparable<Room>
 {
@@ -174,6 +176,30 @@ public class Room implements Comparable<Room>
 		this.numberOfBeds = this.numberOfBeds - noOfbeds ;
 	}
 
+//	public boolean addInMate(InMate inMate)
+//	{
+//		if(inMate != null)
+//		{
+//			//check vacancy
+//			if(this.numberOfBeds > this.roomMates.size())
+//			{
+//				if(this.roomMates.add(inMate.getInMateId()) == false)
+//				{
+//					return false;
+//					//throw new DuplicateInMateException("Could not add InMate "+inMate.getFirstName()+" to the room");
+//				}
+//				else
+//					return true ;
+//			}
+//			else
+//			{
+//				throw new InMatesOverFlowInARoomException("There is no vacancy in the room = "+this.roomNumber);
+//			}
+//		}
+//		else
+//			return false;
+//	}
+	
 	public boolean addInMate(long inMateId)
 	{
 		//if(inMate != null)
@@ -197,8 +223,7 @@ public class Room implements Comparable<Room>
 		//else
 			//return false;
 	}
-	
-	//removeInMate()
+	//removeInMate() ?
 	
 	public boolean removeInMate(long inMateId)
 	{
@@ -226,7 +251,6 @@ public class Room implements Comparable<Room>
 			}
 		}
 	}
-	
 	//validations
 	private static void validateNoOfBeds(int noOfbeds)
 	{

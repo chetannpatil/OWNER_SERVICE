@@ -1,22 +1,27 @@
-package io.chetan.model;
+package io.chetan.owner.model;
 
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
+
 
 import io.chetan.exception.CanNotAddAComplaintException;
 import io.chetan.exception.CanNotRemoveTheComplaintException;
 
 
-
+@Entity
 public final class Pg implements Comparable<Pg>
 {
 
-	//@Id
-	//@GeneratedValue
+	@Id
+	@GeneratedValue
 	private long pgId;
 	
 	@NotEmpty(message="why cant you name your PG?")
@@ -27,15 +32,23 @@ public final class Pg implements Comparable<Pg>
 	//private int totalRooms;
 	
 	//@OneToMany(mappedBy="roomBelongsTo",fetch=FetchType.EAGER)
-	private Set<Long> rooms ;
 	
+	//@OneToMany
+	@ElementCollection
+	private Set<Long> rooms ;
+	  
 	//@OneToMany(mappedBy="complaintBelongsTo",fetch=FetchType.EAGER)
+	//@OneToMany
+	@ElementCollection
 	private Set<Long> complaintBox;
 	
 	private Date pgStartedDate;
 	
-	//@OneToMany(fetch=FetchType.EAGER)
+	
+	//  @OneToMany(fetch=FetchType.EAGER) 
+	@ElementCollection
 	private Set<Long> bills;
+	 
 	
 	//@OneToOne
 	private Long myOwner ;
@@ -55,7 +68,6 @@ public final class Pg implements Comparable<Pg>
 
 
 
-
 	//behaviours
 
 	
@@ -64,6 +76,8 @@ public final class Pg implements Comparable<Pg>
 		return "Pg [pgId=" + pgId + ", name=" + name + ", address=" + address + ", rooms=" + rooms + ", complaintBox="
 				+ complaintBox + ", pgStartedDate=" + pgStartedDate + ", bills=" + bills + ", myOwner=" + myOwner + "]";
 	}
+
+
 
 
 	public boolean addRoom(long roomid)
@@ -168,7 +182,6 @@ public final class Pg implements Comparable<Pg>
 
 
 
-
 	@Override
 	public int compareTo(Pg pg)
 	{
@@ -223,14 +236,6 @@ public final class Pg implements Comparable<Pg>
 	}
 
 
-	public Set<Long> getBills() {
-		return bills;
-	}
-
-
-	public void setBills(Set<Long> bills) {
-		this.bills = bills;
-	}
 
 
 	public Long getMyOwner() {
@@ -240,6 +245,16 @@ public final class Pg implements Comparable<Pg>
 
 	public void setMyOwner(Long myOwner) {
 		this.myOwner = myOwner;
+	}
+
+
+	public Set<Long> getBills() {
+		return bills;
+	}
+
+
+	public void setBills(Set<Long> bills) {
+		this.bills = bills;
 	}
 
 	

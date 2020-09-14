@@ -84,13 +84,19 @@ Total vacancies
 <!-- <td style="color: red;"> -->
 <!-- //<c:forEach var="inMateBean" items="${roomBean.roomMates}"> -->
 
-<td th:each="inMate: ${room.roomMates}">
+<!-- <td th:each="inMate: ${room.roomMates}"> -->
+<!-- <form th:if="${room != null}" action="#" th:action="@{/mypg/deleteRoom}"  method="POST"> -->
+<!-- <b if test="${inMate ne null}" th:text="${inMate.firstName }"></b> -->
 
-<b if test="${inMate ne null}" th:text="${inMate.firstName }"></b>
+<!-- <div th:if="${inMate != null}" > -->
 
-<b th:text="${inMate.phoneNumber }"></b>
+<!-- <!-- <b th:text="${inMate.getFirstName() }"></b> --> -->
+<!-- <!-- <b th:text="${inMate.phoneNumber }"></b> --> -->
 
-</td>
+<!-- </div> -->
+
+
+<!-- </td> -->
 
 <td style="color: red;">
 <b th:text="${room.costPerBed }"></b>

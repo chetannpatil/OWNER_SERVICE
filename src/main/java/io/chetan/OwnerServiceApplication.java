@@ -7,8 +7,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-import io.chetan.model.Address;
-import io.chetan.model.Owner;
+import io.chetan.owner.model.Address;
+import io.chetan.owner.model.Owner;
 import io.chetan.service.OwnerService;
 
 @SpringBootApplication

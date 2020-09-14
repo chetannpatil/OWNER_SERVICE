@@ -1,6 +1,8 @@
 package io.chetan.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -8,32 +10,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
+
 
 import io.chetan.exception.CanNotRemoveTheRoomException;
 import io.chetan.exception.CouldNotLoadYourPgException;
@@ -47,16 +41,18 @@ import io.chetan.exception.InvalidCredentialsException;
 import io.chetan.exception.PasswordMissMatchException;
 import io.chetan.exception.PgAddressCanNotBeEmptyException;
 import io.chetan.exception.RoomDoesNotExistExcepton;
-import io.chetan.model.Address;
-import io.chetan.model.InMate;
-import io.chetan.model.Owner;
-import io.chetan.model.Pg;
-import io.chetan.model.Room;
+import io.chetan.owner.model.Address;
+import io.chetan.owner.model.Bill;
+import io.chetan.owner.model.Complaint;
+import io.chetan.owner.model.InMate;
+import io.chetan.owner.model.Owner;
+import io.chetan.owner.model.Pg;
+import io.chetan.owner.model.Room;
+import io.chetan.owner.util.Util;
 import io.chetan.service.OwnerService;
 
 
 @Controller
-//@RestController
 @RequestMapping(value = "/mypg")
 public class OwnerController 
 {
@@ -76,6 +72,11 @@ public class OwnerController
 	private static final String ROOM_SERVICE_URI = "http://localhost:8083/room/";
 
 	private static final String INMATE_SERVICE_URI = "http://localhost:8084/inMate/";
+	//  /bill
+	private static final String BILL_SERVICE_URI = "http://localhost:8085/bill/";
+	
+	private static final String COMPLAINT_SERVICE_URI = "http://localhost:8086/complaint/";
+	
 	
 	private static final Logger LOGGER = Logger.getLogger(OwnerController.class.getName());
 	
@@ -141,7 +142,7 @@ public class OwnerController
 	private List<InMate> loadAllInMatesOfAPg(HttpSession session)
 	{
 		System.out.println("\n oc loadAllInMatesOfAPg  = \n");
-		
+		LOGGER.info("\n oc loadAllInMatesOfAPg  = \n");
 		//get pgid from session
 		Pg pg = (Pg) session.getAttribute("pg");
 		
@@ -149,13 +150,36 @@ public class OwnerController
 		if(pg.getRooms() == null ||pg.getRooms().isEmpty())
 		{
 			System.out.println("\n loadAllRoomsOfAPg  pg is empty  = \n");
+			LOGGER.info("\n oc loadAllRoomsOfAPg  pg is empty  = \n");
+			
 			throw new EmptyPgException();
 		}
 		
-		List<InMate> list = restTemplate.getForObject(INMATE_SERVICE_URI+"findAll/{pgId}",
-				List.class,
-				pg.getPgId());
+//		List list = restTemplate.getForObject(INMATE_SERVICE_URI+"findAll/{pgId}",
+//				List.class,
+//				pg.getPgId());
 		
+		// List<MyModelClass> myModelClass=(List<MyModelClass>) restTemplate.postForObject(url,mvm,List.class);
+		
+//		 List<InMate> list = (List<InMate>) restTemplate.getForObject(INMATE_SERVICE_URI+"findAll/{pgId}",
+//				List.class,
+//				pg.getPgId());
+		 
+		// MyModelClass[] myModelClasses = restTemplate.postForObject(url,mvm, MyModelClass[].class);
+
+		InMate [] array = restTemplate.getForObject(INMATE_SERVICE_URI+"findAll/{pgId}",
+					InMate[].class,
+					pg.getPgId());
+		 
+		LOGGER.info("\n oc loadAllRoomsOfAPg returning aray  = \n"+array);
+		//return list ;
+		
+		LOGGER.info(Arrays.toString(array));
+		
+		
+		 //List<String> stooges = Arrays.asList("Larry", "Moe", "Curly");
+		List<InMate> list = Arrays.asList(array);
+		//List<InMate> list = 
 		return list ;
 	}
 	
@@ -446,7 +470,7 @@ public class OwnerController
 								
 								// set pg for owner
 								owner.setMyPg(pg.getPgId());
-								
+								//owner.setMyPG(pg.getPgId());
 								// saveback owner
 
 								Owner updatedOwner = ownerService.updateOwner(owner);
@@ -1195,27 +1219,43 @@ public class OwnerController
 					//not necessary it is set in addAroom.html ,set myPg to Room
 					//room.setMyPg(pg.getPgId());
 					//create room
+					LOGGER.info("OC-addARoom- room not duplicate proceed");
+					LOGGER.info("OC-addARoom- room = \n "+room);
 					room = restTemplate.postForObject(ROOM_SERVICE_URI+"/createRoom", room, Room.class);
 					
-					//add room id to Pg's collecction and update pg
+					LOGGER.info("OC-addARoom- posted room to room micro  = \n "+room);
+					//add room id to Pg's collection and update pg
 					
 					
-					pg.addRoom(room.getRoomId());
+					boolean isRoomAdded = pg.addRoom(room.getRoomId());
 					
-					//update pg
-					restTemplate.put(PG_SERVICE_URI+"/updatePg", pg);
+					if(isRoomAdded)
+					{
+						LOGGER.info("OC-addARoom- yes isRoomAdded  = \n "+isRoomAdded);
+						//update pg
+						LOGGER.info("OC-addARoom- updateing pg  = \n "+isRoomAdded);
+						restTemplate.put(PG_SERVICE_URI+"/updatePg", pg);
+						
+						String roomAdditionSuccessMessageStr = "Room with room Number = "+room.getRoomNumber()+" added to ur pg ";
+						
+						LOGGER.info("OC-addARoom-  pg updated, pgid= \n "+pg);
+						//is it requeired to add pg back to session *
+						//session.setAttribute("pg", pg);
+						LOGGER.info("OC-addARoom- successMessage = \n "+roomAdditionSuccessMessageStr);
+						modelAndView.addObject("successMessage", roomAdditionSuccessMessageStr);
+						//return "OwnerHome";
+						
+						LOGGER.info("OC-addARoom- returning ownerhome  = \n ");
+						modelAndView.setViewName("OwnerHome");
+						
+						return modelAndView ;
+					}
+					else
+					{
+						LOGGER.info("OC-addARoom- no  isRoomAdded  = \n "+isRoomAdded);
+						throw new RuntimeException("Could not add room due to some internet issue..sorry :(");
+					}
 					
-					String roomAdditionSuccessMessageStr = "Room with room Number = "+room.getRoomNumber()+" added to ur pg ";
-					
-					//is it requeired to add pg back to session *
-					//session.setAttribute("pg", pg);
-					
-					modelAndView.addObject("successMessage", roomAdditionSuccessMessageStr);
-					//return "OwnerHome";
-					
-					modelAndView.setViewName("OwnerHome");
-					
-					return modelAndView ;
 					
 				}
 				
@@ -1634,12 +1674,19 @@ public class OwnerController
 					
 			//load all inmates 
 			//check for empty collection
-			if(inMates.isEmpty())
+			if(inMates == null || inMates.isEmpty())
 			{
+				LOGGER.info("oc- viewInMates - There'r no InMates in Pg yet,please add ");
 				String emptyRoomsMessageStr = "There'r no InMates in Pg yet,please add";
 				modelAndView.addObject("emptyRoomsMessage",emptyRoomsMessageStr);
 			}
-		
+			else
+			{
+				LOGGER.info("\n\noc- viewInMates - There'r  InMates & r = \n "+inMates);
+				InMate TempinMate = inMates.get(0);
+				LOGGER.info("\n\noc- viewInMates - There'r  InMates.get(0) & r = \n"+ inMates.get(0));
+				//LOGGER.info("oc- viewInMates - There'r  InMates & r = \n "+TempinMate);
+			}
 			//add list to MNV and pass
 			modelAndView.addObject("inMates", inMates);
 			
@@ -2324,5 +2371,385 @@ public class OwnerController
 	 * //return modelAndView ; } }
 	 */
 	
+	
+	//viewDues
+	//@RequestMapping("/viewDues")
+	@GetMapping(value = "/viewDues")
+	public ModelAndView viewDues(ModelAndView modelAndView,HttpSession session)
+	{
+		//try this
+		//u can just load all inmates n check calclualate thier total bill paid amount n compare with total
+		// bill supposed to be paid
+		//tht diff is due
+		
+		
+		
+		try
+		{
+			//PGOwner pgOwnerBean = (PGOwner)hs.getAttribute("pgOwnerBean");
+			LOGGER.info("oc-viewdues-try");
+			Owner owner = (Owner) session.getAttribute("owner");
+			
+			//check who all have due
+			//load all inmtes of a pg
+			
+			//micor service call
+			//List<InMate> inMatesList = inMateService.loadAllInMatesOfAPG(pgOwnerBean.getMyPG());
+			
+			
+			
+			
+			
+			
+			List<InMate> inMatesList = loadAllInMatesOfAPg(session);
+			
+			
+			/* test example 
+			 * InMate tempinMate = new InMate(); tempinMate.setInMateId(420);
+			 * tempinMate.setPhoneNumber("2"); tempinMate.setMyRoom(1L);
+			 * tempinMate.setMyPg(1L); SimpleDateFormat sdf = new
+			 * SimpleDateFormat("dd/MM/yyyy");
+			 * 
+			 * Date tempdate = sdf.parse("29/03/1998");
+			 * 
+			 * tempinMate.setDateOfJoining(tempdate); tempinMate.setFirstName("kamala");
+			 * List<InMate> inMatesList = new ArrayList<InMate>();
+			 * inMatesList.add(tempinMate) ;
+			 */
+			
+			
+			LOGGER.info("oc-viewdues-after loading inmatelist =\n "+inMatesList);
+			
+			//one map to hold all inmates dues with total months count and total dues so far
+			LOGGER.info("oc-viewdues-b4 allInMatesDuesMap decalre =\n ");
+			
+			//Map<InMate, List<String>> allInMatesDuesMap = new TreeMap<InMate,List<String>>();
+			
+			Map<InMate, List<String>> allInMatesDuesMap = new HashMap<InMate, List<String>>();
+			
+			LOGGER.info("oc-viewdues-after allInMatesDuesMap decalre allInMatesDuesMap =\n ");
+			
+			Date today = new Date();
+			
+			String currentMonthStr = today.toString().substring(0,19);
+			
+			//System.out.println("curnmtStr = ");
+			//System.out.println(currentMonthStr);
+			//search for bill in each inmate
+			for(InMate inMate:inMatesList)
+			{
+				System.out.println("\n\n FOR INMATE --------= ");
+				LOGGER.info("oc-viewdues-FOR each INMATE --------=\n"+inMate);
+
+				System.out.println(inMate.getFirstName());
+				//check his joined date and no of bills available
+				Date inMatesJoinedDate = inMate.getDateOfJoining();
+				
+				//calculate how many months he haas stayed in pg
+		
+				int totalMonths = Util.getTotalMonths(inMatesJoinedDate);
+				System.out.println("toatal months = "+totalMonths);
+				
+				//chaeck his bills col
+				
+				//Set<Bill> inMateBillsSet = new LinkedHashSet<Bill>(inMate.getMyBills());
+
+				LOGGER.info("oc-viewdues-b4 inMateBillsSet declare");
+				
+				
+				
+				
+				
+				Set<Long> inMateBillsSet = new LinkedHashSet<Long>(inMate.getMyBills());
+				
+				
+				
+				
+				//Set<Long> inMateBillsSet = new LinkedHashSet<Long>();
+				
+				
+				
+				
+				LOGGER.info("oc-viewdues- after inMateBillsSet declare");
+				int duesMonthCount = 0;
+				//check how many bills he has 
+				//declare one list fro one inmate to hold duesmonths list
+				List<String> oneInMatesDuesYearNMonthsList = null;
+				if(inMateBillsSet.size() != totalMonths)
+				{
+					LOGGER.info("oc-viewdues- inside if(inMateBillsSet.size() != totalMonths)");
+					duesMonthCount = totalMonths - inMateBillsSet.size() ;
+					
+					
+					int thisYear = today.getYear();
+					int thisMonth = today.getMonth();
+					//SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+					//create those many dues
+								
+					 oneInMatesDuesYearNMonthsList = Util.calculateDuesMonthNYear(duesMonthCount);
+					
+				
+				}
+				if(duesMonthCount > 0)
+				{
+					System.out.println("\n yes there are dues since dumnth count > 0\n");
+					LOGGER.info("\n yes there are dues since dumnth count > 0\n");
+					//calculate his total dues amount
+					//double oneMonthCost = inMate.getMyRoom().getCostPerBed();
+					
+					Room room = searchRoom(inMate.getMyRoom());
+					
+					double oneMonthCost = room.getCostPerBed() ;
+							
+					double totalCost = oneMonthCost * duesMonthCount ;
+					
+					oneInMatesDuesYearNMonthsList.add(totalCost+"");
+					//allInMatesDuesMap.put(i, duesMonthCount+"-"+totalCost);
+					
+					allInMatesDuesMap.put(inMate,oneInMatesDuesYearNMonthsList);
+					
+					System.out.println("i, duesMonthCount+\"-\"+totalCost");
+					LOGGER.info("i, duesMonthCount+\"-\"+totalCost");
+					System.out.println(duesMonthCount+"-"+totalCost);
+				}
+								
+			}
+			if(allInMatesDuesMap.isEmpty())
+			{
+				
+				String errorMessage = "There are no pending dues ";
+				//m.addAttribute("noDuesAtAllMessage", noDuesAtAllMessageStr);
+				//return "Dues";
+				
+				LOGGER.info("\n  no pending dues so returning to ownerhome with errror msg ");
+				modelAndView.addObject("errorMessage", errorMessage);
+				
+				modelAndView.setViewName("OwnerHome");
+					
+				return modelAndView ;
+			}
+			else
+			{
+				//m.addAttribute("allInMatesDuesMap", allInMatesDuesMap);
+				//return "Dues";
+				LOGGER.info("\n  thr r  dues so shwoing them ");
+				modelAndView.addObject("allInMatesDuesMap", allInMatesDuesMap);
+				
+				LOGGER.info("\n  thr r  dues - after adding  allInMatesDuesMap t model");
+				
+				modelAndView.setViewName("Dues");
+				
+				return modelAndView ;
+			}
+			
+		} 
+		catch (EmptyPgException e)
+		{
+			e.printStackTrace();
+			System.out.println("\n viewdues () Exception e \n");	
+			LOGGER.info("\n viewdues () Exception e \n"+e.getLocalizedMessage());	
+			
+			//TextUtil.
+			String emptyPgMessageStr = "There are no rooms in your pg at all,..so no inmates , no dues...";
+			//	m.addAttribute("emptyPGMessage", emptyPGMessageStr);
+//				modelAndView.addObject("emptyPgMessage", emptyPgMessageStr);
+			
+			modelAndView.addObject("errorMessage", emptyPgMessageStr);
+			
+				modelAndView.setViewName("OwnerHome");
+				
+				//modelAndView.setViewName("ViewRooms");
+			
+				return modelAndView ;
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			LOGGER.info("viewDues -exception - e = "+e.getMessage()+" - trace = \n "+e.getStackTrace().toString());
+			
+			//m.addAttribute("errorMessage",e.getLocalizedMessage());
+			//return "Error";
+			
+			System.out.println("viewDues -exception - e = "+e.getMessage());
+			
+			
+			modelAndView.addObject("errorMessage", e.getMessage());
+			
+			modelAndView.setViewName("Error");
+				
+			return modelAndView ;
+		}
+	}
+	
+	@GetMapping(value = "/UsingBillServiceviewDues")
+	public ModelAndView viewDues2(ModelAndView modelAndView,HttpSession session)
+	{
+		try
+		{
+			LOGGER.info("viewDues try");
+			
+			//loadallinmates of this pg
+			
+			List<InMate> allInMatesOfAPgList = loadAllInMatesOfAPg(session);
+			
+			Map<InMate,List<Bill>> allInMatesDuesMap = new TreeMap<InMate, List<Bill>>();
+			
+			LOGGER.info("viewDues after allInMatesDuesMap declare ");
+			//for each inmate load his all bills
+			for(InMate inMate : allInMatesOfAPgList)
+			{
+				LOGGER.info("viewDues for each inamte = "+inMate);
+				//load his bills via bill micro
+				
+				Bill [] billArray = restTemplate.getForObject(BILL_SERVICE_URI+"findAll/{myInMate}",
+						Bill[].class,
+						inMate.getInMateId()) ;
+				
+				
+				LOGGER.info("billaray = \n \n "+Arrays.toString(billArray));
+				List<Bill> list = Arrays.asList(billArray);
+				
+				if(list == null || list.isEmpty())
+				{
+					LOGGER.info("viewDues- after microcall to Bill ,list is null or list is empty  = "+list);
+				}
+				LOGGER.info("viewDues- after microcall to Bill list  = "+list);
+						//add to map both key & value
+				
+				allInMatesDuesMap.put(inMate, list);
+
+			}
+			if(allInMatesDuesMap == null || allInMatesDuesMap.isEmpty())
+				{
+					
+					String errorMessage = "There are no pending dues ";
+					//m.addAttribute("noDuesAtAllMessage", noDuesAtAllMessageStr);
+					//return "Dues";
+					
+					LOGGER.info("\n  no pending dues so returning to ownerhome with errror msg ");
+					modelAndView.addObject("errorMessage", errorMessage);
+					
+					modelAndView.setViewName("OwnerHome");
+						
+					return modelAndView ;
+				}
+				else
+				{
+					//m.addAttribute("allInMatesDuesMap", allInMatesDuesMap);
+					//return "Dues";
+					LOGGER.info("\n  thr r  dues so shwoing them ");
+					modelAndView.addObject("allInMatesDuesMap", allInMatesDuesMap);
+					
+					LOGGER.info("\n  thr r  dues - after adding  allInMatesDuesMap t model");
+					
+					modelAndView.setViewName("Dues");
+					
+					
+					//modelAndView.setViewName("DuesTemp");
+					//modelAndView.setViewName("Error");
+					return modelAndView ;
+				}
+		
+			
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			LOGGER.info("viewDues -exception - e = "+e.getMessage()+" - trace = \n "+e.getStackTrace().toString());
+			
+			//m.addAttribute("errorMessage",e.getLocalizedMessage());
+			//return "Error";
+			
+			System.out.println("viewDues -exception - e = "+e.getMessage());
+			
+			
+			modelAndView.addObject("errorMessage", e.getMessage());
+			
+			modelAndView.setViewName("Error");
+				
+			return modelAndView ;
+		}
+	}
+	
+	//openComplaintBox
+	//@RequestMapping(value="/openComplaintBox",method=RequestMethod.GET)
+	@GetMapping(value = "/openComplaintBox")
+	public ModelAndView openComplaintBox(ModelAndView modelAndView,HttpSession session)
+	{
+		try
+		{
+			//PGOwner pgOwnerBean = (PGOwner)hs.getAttribute("pgOwnerBean");
+			
+			//Owner owner =(Owner) session.getAttribute("owner");
+			
+			Pg pg = (Pg)session.getAttribute("pg");
+			
+			LOGGER.info("oc -openComplaintBox -try");
+			System.out.println("PGHC openComplaintBox(Model m)");
+			
+			//load all complaints from db
+			//List<Complaint> complaintsList = complaintService.loadAllComplaintsOfAPG(pgOwnerBean.getMyPG());
+			
+			Complaint[] complaintsArray = restTemplate.getForObject(COMPLAINT_SERVICE_URI+"findAll/{pgId}", 
+					Complaint[].class, 
+					pg.getPgId());
+			
+			
+			List<Complaint> complaintsList = Arrays.asList(complaintsArray);
+			
+			//if no complaints 
+			if(complaintsList == null || complaintsList.isEmpty() )
+			{
+				
+					System.out.println("\nPGHC opencomlBOx -> comlist size = 0");
+					LOGGER.info("oc -openComplaintBox -comlist size = 0");
+					String errorMessage = "There are no complaints in your PG";
+					
+					//m.addAttribute("emptyComplaintBoxMessage", emptyComplaintBoxMessageStr);
+					//return "ViewAllComplaintsOfPG";
+					
+					modelAndView.addObject("errorMessage", errorMessage);
+					
+					modelAndView.setViewName("OwnerHome");
+						
+					return modelAndView ;
+			}
+				else
+				{
+					System.out.println("\nPGHC opencomlBOx -> comlist size > 0");
+					LOGGER.info("oc -openComplaintBox -comlist size > 0");
+					
+					Set<Complaint> complaintsSet = new LinkedHashSet<Complaint>(complaintsList);
+					int complaintSLNumber = 1;
+					//m.addAttribute("complaintSLNumber", complaintSLNumber);
+					//m.addAttribute("complaintsSet", complaintsSet);
+					//return "ViewAllComplaintsOfPG";
+					
+					modelAndView.addObject("complaintSLNumber", complaintSLNumber);
+					
+					modelAndView.addObject("complaintsSet", complaintsSet);
+					
+					modelAndView.setViewName("ViewComplaints");
+				
+					LOGGER.info("oc -openComplaintBox -complaintSLNumber= \n "+complaintSLNumber);
+					
+					return modelAndView ;
+				}
+				
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			//m.addAttribute("errorMessage",e.getLocalizedMessage());
+			////return "Error";
+			
+	modelAndView.addObject("errorMessage", e.getMessage());
+			
+			modelAndView.setViewName("Error");
+				
+			return modelAndView ;
+		}
+	}
+
 }//end of main
 

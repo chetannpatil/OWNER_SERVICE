@@ -1,4 +1,4 @@
-package io.chetan.model;
+package io.chetan.owner.model;
 
 
 import java.util.Date;

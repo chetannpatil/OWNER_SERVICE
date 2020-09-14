@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.chetan.dao.OwnerDao;
-import io.chetan.model.Owner;
+import io.chetan.owner.model.Owner;
 
 @Service
 @Transactional(propagation=Propagation.SUPPORTS,rollbackFor=Exception.class)

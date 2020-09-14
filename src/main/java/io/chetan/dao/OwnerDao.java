@@ -4,8 +4,7 @@ import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
-
-import io.chetan.model.Owner;
+import io.chetan.owner.model.Owner;
 
 public interface OwnerDao extends CrudRepository<Owner, Long>
 {

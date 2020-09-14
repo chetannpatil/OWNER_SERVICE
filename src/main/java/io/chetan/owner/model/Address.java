@@ -1,4 +1,4 @@
-package io.chetan.model;
+package io.chetan.owner.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,7 +141,7 @@ public class Address
 	}
 
 	public String getHouseNumber() {
-		return this.houseNumber;
+		return houseNumber;
 	}
 
 	public void setHouseNumber(String houseNumber) {
@@ -220,10 +220,6 @@ public class Address
 		//for()
 			//throw new PGAddressCanNotBeEmptyException("HouseNumber")
 		return addressList ;
-	}
-
-	public void setAddresId(long addresId) {
-		this.addresId = addresId;
 	}
 	
 	//removeExtraSpace

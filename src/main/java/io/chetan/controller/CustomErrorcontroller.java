@@ -19,7 +19,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
-import io.chetan.model.ErrorJson;
+import io.chetan.owner.model.ErrorJson;
 
 
 /* 
@@ -55,6 +55,7 @@ public class CustomErrorcontroller implements ErrorController {
 		
 		ErrorJson errorJson = new ErrorJson(response.getStatus(), getAttributes(request,debug));
 		
+		//new ErrorJson(response.getStatus(), getAttributes(request, debug));
 		System.out.println("errorjon recd = \n "+errorJson);
 		return errorJson ;
 	}

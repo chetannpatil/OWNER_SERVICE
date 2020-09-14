@@ -1,10 +1,16 @@
-package io.chetan.model;
+package io.chetan.owner.model;
 
 import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -224,6 +230,13 @@ public class InMate implements Comparable<InMate>
 
 
 
+	@Override
+	public String toString() {
+		return "InMate [inMateId=" + inMateId + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber="
+				+ phoneNumber + ", aadhaarNumber=" + aadhaarNumber + ", address=" + address + ", occupation="
+				+ occupation + ", emailId=" + emailId + ", dob=" + dob + ", dateOfJoining=" + dateOfJoining
+				+ ", myBills=" + myBills + ", myComplaints=" + myComplaints + ", myRoom=" + myRoom + "]";
+	}
 
 	@Override
 	public int compareTo(InMate inMate)
@@ -317,15 +330,6 @@ public class InMate implements Comparable<InMate>
 
 	public void setMyPg(Long myPg) {
 		this.myPg = myPg;
-	}
-
-	@Override
-	public String toString() {
-		return "InMate [inMateId=" + inMateId + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber="
-				+ phoneNumber + ", aadhaarNumber=" + aadhaarNumber + ", address=" + address + ", occupation="
-				+ occupation + ", emailId=" + emailId + ", dob=" + dob + ", dateOfJoining=" + dateOfJoining
-				+ ", myBills=" + myBills + ", myComplaints=" + myComplaints + ", myRoom=" + myRoom + ", myPg=" + myPg
-				+ ", password=" + password + "]";
 	}
 	
 	

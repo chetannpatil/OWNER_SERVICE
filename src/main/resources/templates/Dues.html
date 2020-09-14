@@ -1,0 +1,195 @@
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+<meta charset="UTF-8">
+<title>Dues</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+   
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+
+
+<!-- <c:if test="${!empty allInMatesDuesMap }"> -->
+ <!-- <form th:if = "${session.owner != null}" -->
+ 
+
+ 
+ 
+<!--  th:if = "${confirmDeleteInMateMessage != null && confirmDeleteInMateMessage.length() > 0 }"> -->
+<!--   <div  th:if = "${allInMatesDuesMap != null && !empty allInMatesDuesMap}"> -->
+ 
+  <div  th:if = "${allInMatesDuesMap != null &&  allInMatesDuesMap.isEmpty() == false}">
+  
+<!-- <h3 style="color: maroon;" align="center">Followings are dues till this month <%=new java.util.Date()%> </h3> -->
+
+<!-- <h5 th:text="${duplicateOwnerErrorMessage }"></h5> -->
+
+<h3 style="color: maroon;" align="center" >Followings are dues till this month : new java.util.Date() </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+INMATE'S FULL NAME
+</th>
+
+
+<th >
+PHONE NUMBER
+</th>
+
+<th>
+DATE OF JOINING
+</th>
+
+
+<th >
+HIS ROOM NUMBER
+</th>
+
+<th >
+RENT PER MONTH
+</th>
+
+<th >
+SHARING(TOTAL PERSONS IN ROOM)
+</th>
+
+<th >
+HE IS YET TO PAY FOR THESE MANY MONTHS
+</th>
+
+<th >
+DUES MONTHS
+</th>
+
+<th >
+TOTAL AMOUNT HE HAS TO PAY
+</th>
+
+</tr>
+
+</thead>
+
+
+<!-- <c:forEach var="entryBean" items="${allInMatesDuesMap.entrySet()}"> -->
+
+<div th:each="entryBean: ${allInMatesDuesMap.entrySet()}">
+    
+	
+<!-- 	<td th:text="${student.id}" /> -->
+<!--     <td th:text="${student.name}" /> -->
+
+<tr>
+
+<td>
+<label th:text="${entryBean.getKey().firstName}"></label>
+<!-- <label>${entryBean.getKey().lastName}</label> -->
+<label th:text="${entryBean.getKey().lastName}"></label>
+</td>
+
+<td>
+<!-- <label>${entryBean.getKey().phoneNumber}</label> -->
+<label th:text="${entryBean.getKey().phoneNumber}"></label>
+</td>
+
+<td>
+<!-- <label>${entryBean.getKey().dateOfJoining.toString().substring(0,10)}</label> -->
+
+<label th:text="${entryBean.getKey().dateOfJoining.toString().substring(0,10)}"></label>
+<!-- getDateOfJoining -->
+
+
+<!-- <label th:text="${entryBean.getKey().getDateOfJoining()}"></label> -->
+
+
+
+<!-- <label th:value="under progress"></label> -->
+<!-- <label >"under progress"</label> -->
+</td>
+
+<td>
+<!-- <label>${entryBean.getKey().myRoom.getRoomNumber()}</label> -->
+<!-- <label th:text="under progress"></label> -->
+<label >"under progress"</label>
+</td>
+
+<td>
+<!-- <label>${entryBean.getKey().myRoom.getCostPerBed() }</label> -->
+<!-- <label th:text="under progress"></label> -->
+
+<label >"under progress"</label>
+
+</td>
+
+<td>
+<!-- <label>${entryBean.getKey().myRoom.getNumberOfBeds() }</label> -->
+<!-- <label th:text="under progress"></label> -->
+<label >"under progress"</label>
+</td>
+
+<td>
+<!-- <label>${entryBean.getValue().size()-1 }</label> -->
+<label th:text="${entryBean.getValue().size()-1 }"></label>
+</td>
+
+<td>
+
+<!-- ${entryBean.getValue().get(0)} -->
+<label th:text="${entryBean.getValue().get(0)}"></label>
+
+<br/>
+<!-- to -->
+<label th:text="to"></label>
+<br/>
+<!-- ${entryBean.getValue().get(entryBean.getValue().size()-2)} -->
+
+<label th:text="${entryBean.getValue().get(entryBean.getValue().size()-2)}"></label>
+
+</td>
+
+<td>
+<!-- <label>${entryBean.getValue().get(entryBean.getValue().size()-1) }</label> -->
+<label th:text="${entryBean.getValue().get(entryBean.getValue().size()-1) }"></label>
+</td>
+
+<td>
+<!-- <form action="openPayRentView.owner" method="POST"> -->
+
+ <form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/openPayRentView}"   method="POST">
+
+<input type="hidden" name="inMateId" th:value='${entryBean.getKey().inMateId }'>
+
+<input type="hidden" name="duesMonthCount" th:value='${entryBean.getValue().size()-1 }'>
+
+<input type="hidden" name="totalDue" th:value='${entryBean.getValue().get(entryBean.getValue().size()-1) }'>
+
+<!-- <input type="submit" value="pay rent now"> -->
+
+<!-- <input type="submit" th:value="pay_rent_now"/> -->
+<pre>close due? 
+
+Contact <label th:text='${entryBean.getKey().getFirstName() }'></label>
+
+</pre>
+
+</form>
+
+</td>
+</tr>
+
+<!-- </c:forEach> -->
+</div>
+<!-- ends for each entrybean  -->
+
+</table>
+
+<!-- </c:if> -->
+</div>
+</body>
+</html>
