@@ -1,0 +1,36 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>RaiseAComplaint</title>
+
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+<div th:replace="InMateHeader :: ih"></div>
+
+ <form  action="#" th:action="@{/mypg/raiseAComplaint}"  th:object="${complaint}" method="POST">
+
+<div align="center">
+  
+   <input type="hidden" name="myPg"  th:value="${session.pg.getPgId()}">
+ 
+ <input type="hidden" name="inMate"  th:value="${session.inMate.getInMateId()}">
+ 
+ <h1 align="center">Pls enter description below and submit complaint</h1>
+ 
+ 
+ <input type="text" th:field="*{description}"/>     
+<label th:if="${#fields.hasErrors('description')}" th:errors="*{description}"> </label> 
+
+<input type="submit" th:value="submit"/>
+<input type="reset" th:value="reset"/>
+
+</div>
+ 
+
+</form>
+</body>
+</html>

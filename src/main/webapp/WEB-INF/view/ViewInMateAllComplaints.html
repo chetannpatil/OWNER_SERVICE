@@ -1,0 +1,99 @@
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+<meta charset="UTF-8">
+<title>ViewInMateAllComplaints</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+   
+
+<body>
+
+<div th:replace="InMateHeader :: ih"></div>
+ViewInMateAllComplaints
+ 
+ <div  th:if = "${complaintedInMatesMap != null &&  complaintedInMatesMap.isEmpty() == false}">
+ 
+<h3 style="color: maroon;" align="center" >Followings are complaints till today </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+complaint raised by
+</th>
+
+<th >
+complaint description
+</th>
+
+<th >
+complaint Raised Date
+</th>
+
+<th >
+ is complaint Resolved
+</th>
+
+<th >
+ is  complaintResponded at least ?
+</th>
+
+
+</tr>
+
+</thead>
+
+
+<div th:each="entryBean: ${complaintedInMatesMap.entrySet()}">
+    
+   
+<tr>
+
+<td>
+<div  th:if = "${entryBean.getValue().inMate ==session.inMate.inMateId }">
+<label>YOU</label>
+</div>
+
+<div  th:if = "${entryBean.getValue().inMate !=session.inMate.inMateId }">
+
+<label th:text="${entryBean.getKey().firstName}"></label>
+
+<label th:text="${entryBean.getKey().lastName}"></label>
+</div>
+
+</td>
+
+
+</tr>
+</table>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+ <div th:each="complaint: ${entryBean.getValue()}">
+ 
+ <tr>
+ <td>empty 1</td>
+<td>empty2</td>
+<td>empty3</td>
+<td>empty4</td>
+<td>empty5</td>
+
+ </tr>
+ 
+ </div>
+ <!-- foreach complaint div ends -->
+ </table>
+
+  </div>
+ <!-- foreach entrybean div ends -->
+
+
+
+
+</div>
+ <!-- foreach complaintedInMatesMap div ends -->
+</body>
+</html>

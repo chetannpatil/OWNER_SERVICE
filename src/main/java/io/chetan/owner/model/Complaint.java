@@ -11,12 +11,12 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-@Entity
+//@Entity
 public class Complaint implements Comparable<Complaint>
 {
 
-	@Id
-	@GeneratedValue
+	//@Id
+	//@GeneratedValue
 	private long complaintId ;
 	
 	@NotEmpty(message="If you do not know what you want to complaint then why are raising ?")
@@ -42,7 +42,9 @@ public class Complaint implements Comparable<Complaint>
 	
 	private boolean isResponded ;
 	
+	private String ownersResponse ;
 
+	
 
 	public long getComplaintId() 
 	{
@@ -83,6 +85,18 @@ public class Complaint implements Comparable<Complaint>
 
 	public void setInMate(Long inMate) {
 		this.inMate = inMate;
+	}
+
+
+
+	public String getOwnersResponse() {
+		return ownersResponse;
+	}
+
+
+
+	public void setOwnersResponse(String ownersResponse) {
+		this.ownersResponse = ownersResponse;
 	}
 
 
@@ -188,7 +202,8 @@ public class Complaint implements Comparable<Complaint>
 	@Override
 	public String toString() {
 		return "Complaint [complaintId=" + complaintId + ", description=" + description + ", date=" + date + ", inMate="
-				+ inMate + ", myPg=" + myPg + ", isResolved=" + isResolved + ", isResponded=" + isResponded + "]";
+				+ inMate + ", myPg=" + myPg + ", isResolved=" + isResolved + ", isResponded=" + isResponded
+				+ ", ownersResponse=" + ownersResponse + "]";
 	}
 
 

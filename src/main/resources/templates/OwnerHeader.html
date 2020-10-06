@@ -1,6 +1,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>OH</title>
+<title>OwenerHeader</title>
 
 
 
@@ -67,7 +67,10 @@
     <div class="dropdown-content">
     
 <!--       <a href="openComplaintBox.owner">OPEN COMPLAINT-BOX</a> -->
-        <a th:href="@{/mypg/openComplaintBox}">OPEN COMPLAINT-BOX</a>
+<!--         <a th:href="@{/mypg/openComplaintBox}">OPEN COMPLAINT-BOX</a> -->
+        
+          <a th:href="@{/mypg/viewAllComplaints}">view All Complaints</a>
+          
      </div>
   </div>
 
@@ -91,7 +94,9 @@
     <div class="dropdown-content">    
 <!--       <a href="viewOwnerDetails.owner">SHOW MY DETAILS</a> -->
 
-      <a th:href="@{/mypg/viewOwnerDetails}">SHOW MY DETAILS</a> 
+<!--       <a th:href="@{/mypg/viewOwnerDetails}">SHOW MY DETAILS</a>  -->
+
+      <a th:href="@{/mypg/viewMyDetails}">SHOW MY DETAILS</a> 
       
 <!--       <a href="openEditOwnerDetails.owner">EDIT MY DETAILS</a> -->
       <a th:href="@{/mypg/openEditOwnerDetails}">EDIT MY DETAILS</a> 

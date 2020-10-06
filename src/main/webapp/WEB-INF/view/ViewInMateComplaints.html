@@ -1,0 +1,109 @@
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+<meta charset="UTF-8">
+<title>ViewInMateComplaints</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+   
+
+<body>
+
+<div th:replace="InMateHeader :: ih"></div>
+ViewInMateComplaints
+<!--  <div  th:if = "${complaintsMap != null && !empty complaintsMap}"> -->
+
+<!--  <div  th:if = "${allInMatesDuesMap != null &&  allInMatesDuesMap.isEmpty() == false}"> -->
+ 
+<!--  <div  th:if = "${complaintsMap != null &&  complaintsMap.isEmpty() == false}"> -->
+
+  <div  th:if = "${complaintsList != null &&  complaintsList.isEmpty() == false}">
+  
+<h3 style="color: maroon;" align="center" >Followings are ur complaints till today </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+description
+</th>
+
+<th >
+Raised Date
+</th>
+
+<th >
+ Resolved ?
+</th>
+
+<th >
+Responded at least ?
+</th>
+
+<th >
+OWner's
+Response
+</th>
+
+
+</tr>
+
+</thead>
+
+
+<div th:each="complaint: ${complaintsList}">
+   <tr>
+<td>
+<!-- <label th:text="${entryBean.getKey().firstName}"></label> -->
+
+
+<!-- <label th:value="${complaint.description}"></label> -->
+
+<label th:text="${complaint.description}"></label>
+
+</td>
+
+<td>
+<label th:text="${complaint.date}"></label>
+</td>
+
+<td>
+<label th:text="${complaint.isResolved()}"></label>
+
+
+</td>
+
+<td>
+<label th:text="${complaint.isResponded()}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().ownersResponse}"></label>
+</td>
+
+<td>
+<!-- <div  th:if = "${entryBean.getValue().inMate == entryBean.getKey().inMateId }"> -->
+
+
+
+close complaint
+
+<!-- </div> -->
+
+</td>
+</tr>
+</div>
+
+
+
+
+<!-- ends for each entrybean  -->
+
+</table>
+
+</div>
+</body>
+</html>

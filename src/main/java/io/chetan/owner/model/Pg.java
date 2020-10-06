@@ -12,16 +12,15 @@ import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
 
 
-import io.chetan.exception.CanNotAddAComplaintException;
 import io.chetan.exception.CanNotRemoveTheComplaintException;
 
 
-@Entity
+//@Entity
 public final class Pg implements Comparable<Pg>
 {
 
-	@Id
-	@GeneratedValue
+	//@Id
+	//@GeneratedValue
 	private long pgId;
 	
 	@NotEmpty(message="why cant you name your PG?")

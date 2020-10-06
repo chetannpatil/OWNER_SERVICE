@@ -1,0 +1,176 @@
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+<meta charset="UTF-8">
+<title>ownerViewPgAllComplaints</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+   
+
+<body>
+
+<div th:replace="OwnerHeader :: oh"></div>
+ownerViewPgAllComplaints
+ 
+ <div  th:if = "${complaintedInMatesMap != null &&  complaintedInMatesMap.isEmpty() == false}">
+ 
+<h3 style="color: maroon;" align="center" >Followings are complaints till today </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+by
+</th>
+
+<th >
+description
+</th>
+
+<th >
+Raised Date
+</th>
+
+<th >
+Resolved
+</th>
+
+<th >
+Responded at least ?
+</th>
+
+<th >
+Ur
+Response
+</th>
+
+</tr>
+
+</thead>
+
+
+<div th:each="entryBean: ${complaintedInMatesMap.entrySet()}">
+    
+   
+<tr>
+
+<td>
+<!-- <div  th:if = "${entryBean.getKey().inMate == session.inMate.inMateId }"> -->
+<!-- <label>YOU</label> -->
+<!-- </div> -->
+
+
+
+<label th:text="${entryBean.getValue().firstName}"></label>
+
+<label th:text="${entryBean.getValue().lastName}"></label>
+
+
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().description}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().date}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().isResolved()}"></label>
+
+
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().isResponded()}"></label>
+
+
+<form action="#" th:action="@{/mypg/openRespondToComplaintView}" method="POST">
+
+<input type="hidden" name="complaintId" th:value="${entryBean.getKey().complaintId }"/>
+
+<input type="submit" th:value="respond">
+
+</form>
+
+</td>
+
+<td>
+<!-- <label th:text="${entryBean.getKey().isResolved()}"></label> -->
+
+<label th:text="${entryBean.getKey().getOwnersResponse()}"></label>
+</td>
+
+
+ </tr>
+
+  </div>
+ <!-- foreach entrybean div ends -->
+
+ </table>
+
+</div>
+ <!-- foreach complaintedInMatesMap div ends above -->
+ 
+ <!-- a division to show ressponse message to inmate and response or cancel option to owner -->
+
+<!-- <div  style="background-color:red;color:white;width:510px; height:160px;position:absolute;left: 0;right: 0;margin: auto;"  -->
+<!-- th:if = "${isOwnerLikeToRespond != null && isOwnerLikeToRespond == true }"> -->
+
+<!-- <div  style="position:absolute;left: 500;right: 0;margin: auto"  -->
+<!-- th:if = "${isOwnerLikeToRespond != null && isOwnerLikeToRespond == true }"> -->
+
+<div  th:if = "${isOwnerLikeToRespond != null && isOwnerLikeToRespond == true }">
+
+
+
+
+<table align="center">
+<!-- align="center"> -->
+<form action="#" th:action="@{/mypg/respondToComplaint}" method="POST">
+
+<!-- <tr rowsplit='2'> -->
+<tr >
+<td colspan="2">
+
+<textarea id="responseMessage" name="responseMessage" cols="30" rows="5">
+enter ur resolution message here for the complaint u selected n submit
+</textarea>
+</td>
+</tr>
+
+<tr >
+<td>
+<input type="hidden" name="complaintId" th:value="${complaintId }"/>
+
+<input type="submit" th:value="SEND_RESPONSE">
+
+
+</form>
+</td>
+
+
+<!--  cancel option -->
+<td>
+<form action="#" th:action="@{/mypg/viewAllComplaints}" method="GET">
+
+<input type="submit" th:value="CAncell_RESPONSE">
+
+</form>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+</div>
+ <!-- ressponse messag div ends above -->
+</body>
+</html>

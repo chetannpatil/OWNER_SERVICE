@@ -1,0 +1,112 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="ISO-8859-1">
+<title>InMateHeader</title>
+</head>
+<body>
+
+<div th:fragment="ih"> 
+<div class="navbar">
+
+  
+    
+    <a th:href="@{back}">HOME</a>
+    
+  <!-- <div class="dropdown">
+  
+    <button class="dropbtn">IN-MATES
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+
+	            <a th:href="@{/mypg/addInMate}">ADD IN-MATE</a>
+	
+
+	  	            <a th:href="@{/mypg/viewInMates}">VIEW IN-MATE</a>
+	    
+     </div>
+  </div>  -->
+
+   <div class="dropdown">
+    <button class="dropbtn">ROOMS 
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+
+<!-- 	       <a th:href="@{/mypg/openAddARoom}">ADD A ROOM</a> -->
+	 
+
+             <a th:href="@{/mypg/viewInMateRoom}">show My ROOM</a>
+            <a th:href="@{/mypg/viewPgRooms}">VIEW ALL ROOMS</a>
+      
+      </div>
+
+  </div> 
+
+
+
+      <div class="dropdown">
+    <button class="dropbtn">RENT
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+
+<!--         <a th:href="@{/mypg/viewDues}">VIEW ALL DUES</a> -->
+           <a th:href="@{/mypg/viewInMateDues}">VIEW MY DUES</a>
+      </div>
+    </div>
+
+         <div class="dropdown">
+    <button class="dropbtn">COMPLAINT-BOX
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+    
+        <a th:href="@{/mypg/openRaiseAComplaintView}">RAISE A COMPLAINT</a>
+        <a th:href="@{/mypg/inMateViewMyComplaints}">VIEW MY COMPLAINTS</a>
+         <a th:href="@{/mypg/viewAllComplaints}">VIEW PG ALL COMPLAINTS</a>
+     </div>
+  </div>
+
+  <div class="dropdown">
+    <button class="dropbtn">MyPG
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">    
+
+            <a th:href="@{/mypg/viewInMatePgDetails}">VIEW MY PG DETAILS</a> 
+
+           
+<!--             <a th:href="@{/mypg/openEditPgDetails}">EDIT MY PG DETAILS</a>  -->
+    </div>
+  </div>
+
+ <div class="dropdown">
+    <button class="dropbtn">ME
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">    
+
+
+<!--       <a th:href="@{/mypg/viewOwnerDetails}">SHOW MY DETAILS</a>  -->
+      
+<a th:href="@{/mypg/viewMyDetails}">SHOW MY DETAILS</a> 
+      <a th:href="@{/mypg/editMyDetails}">EDIT MY DETAILS</a> 
+    </div>
+  </div>
+
+
+<a th:href="@{/mypg/logOut}">LOG-OUT</a> 
+
+</div>
+
+
+<!-- <h5 th:text="${duplicatePgErrorMessage }"></h5> -->
+               
+<h3 th:text="${successMessage }"></h3>
+
+<h3 th:text="${errorMessage }"></h3>
+</div>
+</body>
+</html>

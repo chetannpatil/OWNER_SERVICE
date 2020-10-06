@@ -1,0 +1,195 @@
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+<meta charset="UTF-8">
+<title>InMateViewMyComplaints</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+   
+
+<body>
+
+<div th:replace="InMateHeader :: ih"></div>
+InMateViewMyComplaints
+
+  
+<h3 style="color: maroon;" align="center" >Followings are your complaints till today </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+description
+</th>
+
+<th >
+Raised Date
+</th>
+
+<th >
+ Resolved ?
+</th>
+
+<th >
+Responded at least ?
+</th>
+
+<th >
+OWner's
+Response
+</th>
+
+
+</tr>
+
+</thead>
+
+
+<div th:each="complaint: ${complaintsList}">
+   <tr>
+<td>
+<!-- <label th:text="${entryBean.getKey().firstName}"></label> -->
+
+
+<!-- <label th:value="${complaint.description}"></label> -->
+
+<label th:text="${complaint.description}"></label>
+
+</td>
+
+<td>
+<label th:text="${complaint.date}"></label>
+</td>
+
+<td>
+<label th:text="${complaint.isResolved()}"></label>
+
+
+
+<!-- OPTION TO INMATE TO SET IT RESOLVE -->
+
+<div  th:if = "${complaint.isResolved() == false }">
+<!-- <form action="#" th:action="@{/mypg/setComplaintResolved}" method="POST"> -->
+
+<form action="#" th:action="@{/mypg/toggleComplaintState2}" method="POST">
+
+<input type="hidden" name="complaintId" th:value="${complaint.complaintId }"/>
+
+<input type="submit" th:value="make_it_RESolved">
+
+</form>
+</div>
+<!-- compliant resolve ends -->
+
+
+<!-- unresloved -->
+<div  th:if = "${complaint.isResolved() }">
+<!-- <form action="#" th:action="@{/mypg/setComplaintUnResolved}" method="POST"> -->
+
+<form action="#" th:action="@{/mypg/toggleComplaintState2}" method="POST">
+<input type="hidden" name="complaintId" th:value="${complaint.complaintId }"/>
+
+<input type="submit" th:value="set_it_to_unRESolved">
+
+</form>
+</div>
+<!-- compliant Unresolve ends -->
+
+
+
+
+
+
+
+</td>
+
+<td>
+<label th:text="${complaint.isResponded()}"></label>
+</td>
+
+<!-- getOwnersResponse -->
+<td>
+<!-- <label th:text="${complaint.getOwnersResponse()}"></label> -->
+
+<label th:text="${complaint.ownersResponse}"></label>
+
+</td>
+
+<td>
+
+<form action="#" th:action="@{/mypg/showCloseComplaintWindow}" method="GET">
+<input type="hidden" name="complaintId" th:value="${complaint.complaintId }"/>
+
+<input type="submit" th:value="close_complaint">
+
+</form>
+
+</td>
+
+</tr>
+</div>
+
+<!-- ends for each complaint  -->
+
+</table>
+
+
+
+
+<!-- option fr inmate to delete his complaint -->
+<div  th:if = "${isInMateLikeToDeleteComplaint != null && isInMateLikeToDeleteComplaint == true }">
+
+<!-- <h2 th:text="Are u sure u really want to close this complaint?  -->
+<!-- For ur kind information if u say yes we ll delete complaint" ></h2> -->
+
+
+
+
+<table align="center" border="1" style="border-style:dashed; ;">
+<!-- <tr rowsplit='2'> -->
+
+<tr >
+<td colspan="2">
+<!-- <h2 th:text="Are u sure u really want to close this complaint? For ur kind information if u say yes we ll delete complaint" ></h2> -->
+
+<pre >
+<h2 align="center">"Are u sure u really want to close this complaint? 
+For ur kind information if u say yes we ll delete complaint" </h2>
+</pre>
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+<form action="#" th:action="@{/mypg/closeComplaint}" method="POST">
+<input type="hidden" name="complaintId" th:value="${complaintId }"/>
+
+<input type="text" name="complaintId" th:value="${complaintId }"/>
+
+<input type="submit" th:value="YES">
+</form>
+
+</td>
+
+<!--  cancel option in second column-->
+<td>
+<form action="#" th:action="@{/mypg/inMateViewMyComplaints}" method="GET">
+
+<input type="submit" th:value="NO">
+
+</form>
+</td>
+
+</tr>
+
+</table>
+
+
+</div>
+</body>
+</html>

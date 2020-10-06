@@ -1,0 +1,122 @@
+ <html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>ViewOwnerAllComplaints</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+<body>
+<div th:replace="OwnerHeader :: oh"></div>
+ViewOwnerAllComplaints
+
+<!--  <div  th:if = "${complaintedInMatesMap != null && !empty complaintedInMatesMap}"> -->
+
+<!--  <div  th:if = "${allInMatesDuesMap != null &&  allInMatesDuesMap.isEmpty() == false}"> -->
+ 
+ <div  th:if = "${complaintedInMatesMap != null &&  complaintedInMatesMap.isEmpty() == false}">
+ hi
+<h3 style="color: maroon;" align="center" >Followings are complaints till today </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+complaint raised by
+</th>
+
+
+<th >
+his PHONE NUMBER
+</th>
+
+<th >
+HIS ROOM NUMBER
+</th>
+
+
+<th >
+complaint description
+</th>
+
+<th >
+complaint Raised Date
+</th>
+
+<th >
+ is complaint Resolved
+</th>
+
+<th >
+ is  complaintResponded atleast?
+</th>
+
+
+</tr>
+
+</thead>
+
+
+<div th:each="entryBean: ${complaintedInMatesMap.entrySet()}">
+    
+<tr>
+
+<td>
+<label th:text="${entryBean.getKey().firstName}"></label>
+
+<label th:text="${entryBean.getKey().lastName}"></label>
+</td>
+
+<td>
+
+<label th:text="${entryBean.getKey().phoneNumber}"></label>
+</td>
+
+<td>
+<!-- <label>${entryBean.getKey().dateOfJoining.toString().substring(0,10)}</label> -->
+<!-- <label th:value=">${entryBean.getKey().dateOfJoining.toString().substring(0,10)}</"></label> -->
+under progress
+</td>
+
+<td>
+<label th:text="${entryBean.getValue().description}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getValue().date}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getValue().isResolved()}"></label>
+
+
+</td>
+
+<td>
+<label th:text="${entryBean.getValue().isResponded()}"></label>
+</td>
+
+<div  th:if = "${entryBean.getValue().inMate == entryBean.getKey().inMateId }">
+
+<td>
+
+close complaint
+
+</td>
+</div>
+
+
+</tr>
+
+</div>
+<!-- ends for each entrybean  -->
+
+</table>
+
+</div>
+</body>
+</html>

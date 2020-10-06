@@ -230,12 +230,15 @@ public class InMate implements Comparable<InMate>
 
 
 
+
+
 	@Override
 	public String toString() {
 		return "InMate [inMateId=" + inMateId + ", firstName=" + firstName + ", lastName=" + lastName + ", phoneNumber="
 				+ phoneNumber + ", aadhaarNumber=" + aadhaarNumber + ", address=" + address + ", occupation="
 				+ occupation + ", emailId=" + emailId + ", dob=" + dob + ", dateOfJoining=" + dateOfJoining
-				+ ", myBills=" + myBills + ", myComplaints=" + myComplaints + ", myRoom=" + myRoom + "]";
+				+ ", myBills=" + myBills + ", myComplaints=" + myComplaints + ", myRoom=" + myRoom + ", myPg=" + myPg
+				+ ", password=" + password + "]";
 	}
 
 	@Override

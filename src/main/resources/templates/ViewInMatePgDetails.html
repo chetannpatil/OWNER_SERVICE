@@ -3,7 +3,7 @@
    
 <head>
 <meta charset="UTF-8">
-<title>ViewPgDetails</title>
+<title>viewInMatePgDetails</title>
 
  <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -12,11 +12,11 @@
 
 <body>
 
-<div th:replace="OwnerHeader :: oh"></div>
+<div th:replace="InMateHeader :: ih"></div>
 
 
 
-<h5  align="center" th:text="${duplicatePGErrorMessage }"></h5>
+<!-- <h5  align="center" th:text="${duplicatePGErrorMessage }"></h5> -->
 
 <table th:if = "${session.pg != null}" align="center" border="0" bordercolor="maroon">
 <tr>

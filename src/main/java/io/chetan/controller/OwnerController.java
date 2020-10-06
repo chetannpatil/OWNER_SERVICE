@@ -5,17 +5,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 
-
+import io.chetan.exception.CanNotRaiseAComplaintException;
 import io.chetan.exception.CanNotRemoveTheRoomException;
 import io.chetan.exception.CouldNotLoadYourPgException;
 import io.chetan.exception.DuplicateInMateException;
@@ -41,6 +43,8 @@ import io.chetan.exception.InvalidCredentialsException;
 import io.chetan.exception.PasswordMissMatchException;
 import io.chetan.exception.PgAddressCanNotBeEmptyException;
 import io.chetan.exception.RoomDoesNotExistExcepton;
+import io.chetan.exception.SessionTimedOutException;
+import io.chetan.exception.ZeroComplaintsException;
 import io.chetan.owner.model.Address;
 import io.chetan.owner.model.Bill;
 import io.chetan.owner.model.Complaint;
@@ -48,6 +52,7 @@ import io.chetan.owner.model.InMate;
 import io.chetan.owner.model.Owner;
 import io.chetan.owner.model.Pg;
 import io.chetan.owner.model.Room;
+import io.chetan.owner.util.Constants;
 import io.chetan.owner.util.Util;
 import io.chetan.service.OwnerService;
 
@@ -64,6 +69,8 @@ public class OwnerController
 
 	private HashMap<String, String> uriVariablesMap;
 
+	
+
 	//private HashMap<String, String> uriVariablesMap = new HashMap<String, String>();
 
 //	private static final String pgServiceUri = "http://localhost:8082/pg/";
@@ -78,10 +85,11 @@ public class OwnerController
 	private static final String COMPLAINT_SERVICE_URI = "http://localhost:8086/complaint/";
 	
 	
-	private static final Logger LOGGER = Logger.getLogger(OwnerController.class.getName());
+	//private static final Logger LOGGER = Logger.getLogger(OwnerController.class.getName());
 	
 	//org.apache.logging.log4j.Logge
 	
+	private static final Logger LOGGER = LogManager.getLogger(OwnerController.class);
 	
 	//private static final String ERROR_PATH = "/error";
 	
@@ -113,13 +121,250 @@ public class OwnerController
 //		return modelAndView;
 //	}
 	
+	
+	
 	//redundant methods
 	
+	private boolean isDuplicateInMate(String phoneNumber)
+	{
+		LOGGER.info("\n  OC-isDuplicateInMate -phoneNumber \n"+phoneNumber);
+		
+//		String searchInMateURL = INMATE_SERVICE_URI+"/find/{phoneNumber}";
+//		
+//		Boolean isInMateExist = restTemplate.getForObject(searchInMateURL,
+//				Boolean.class,
+//				inMate.getPhoneNumber());
+		
+        Boolean isInMateExist = restTemplate.getForObject(INMATE_SERVICE_URI+"find/"+phoneNumber,
+        		Boolean.class);
+        
+        if(isInMateExist)
+        	return true;
+        else
+        	return false;
+        
+	}
+	//updatecomplaint
+	
+	private void deleteComplaint(long complaintId)
+	{
+		LOGGER.info("\nOC-deleteComplaint with complaintId = "+complaintId); 
+		
+//		restTemplate.delete(COMPLAINT_SERVICE_URI+"delete/"+complaintId);
+		
+		//restTemplate.delete(COMPLAINT_SERVICE_URI+"delete/{complaintId}",complaintId);
+		
+//		restTemplate.delete(INMATE_SERVICE_URI+"delete/"+inMateId);
+		
+		restTemplate.delete(COMPLAINT_SERVICE_URI+"delete/"+complaintId);
+		
+		LOGGER.info("\nOC-deleteComplaint after deleting , complaintId = "+complaintId); 
+		
+		
+	}
+	
+	private List<Complaint> getNonEmptyComplainBox(Complaint [] complaintsArray) throws ZeroComplaintsException
+	{
+		LOGGER.info("\nOC-getNonEmptyComplainBox"); 
+		
+		if(complaintsArray == null || complaintsArray.length <= 0)
+		{
+			LOGGER.info("\nOC-getNonEmptyComplainBox - empty");  
+			
+			throw new ZeroComplaintsException();
+		}
+		List<Complaint> complaintsList = Arrays.asList(complaintsArray);
+		
+		return complaintsList ;
+	}
+	private List<Complaint> loadMyAllComplaints(HttpSession session) throws ZeroComplaintsException
+	{
+		        
+		LOGGER.info("\nOC-loadMyAllComplaints -   \n");
+		
+		       InMate inMate  = (InMate) session.getAttribute("inMate");
+		
+	            String loadComplaintsURL = COMPLAINT_SERVICE_URI+"findAll/inMateId/{inMateId}";
+				
+				Complaint[] complaintsArray = restTemplate.getForObject(loadComplaintsURL,
+						Complaint[].class, 
+						inMate.getInMateId());
+				
+				//check for empty
+				//isComplaintBoxEmpty(complaintsArray);
+				
+				
+				//List<Complaint> complaintsList = Arrays.asList(complaintsArray)
+				
+				List<Complaint> complaintsList = getNonEmptyComplainBox(complaintsArray);
+				
+				LOGGER.info("\nOC-loadMyAllComplaints -  returning  complaintsList = \n"+complaintsList);
+				
+			return complaintsList ;
+	}
+	private Map<Complaint, InMate> makeUpReturnToViewAllComplaints(HttpSession session)
+			throws ZeroComplaintsException
+	{
+		//load all complaints from db
+		
+		LOGGER.info("\nOC-makeUpReturnToViewAllComplaints -   \n");
+		
+		List<Complaint> pgAllComplaintsList = loadAllComplaintsOfPg(session);
+		
+		
+									
+		Map<Complaint, InMate> complaintedInMatesMap = loadComplaintedInMates(pgAllComplaintsList);
+		
+		LOGGER.info("\nOC-makeUpReturnToViewAllComplaints - returning complaintedInMatesMap  = \n"+complaintedInMatesMap);
+		
+		return complaintedInMatesMap ;
+		
+	}
+	private void updateComplaint(Complaint complaint)
+	{
+		LOGGER.info("\nOC-updateComplaint -  complaint \n"+complaint);
+		
+		restTemplate.put(COMPLAINT_SERVICE_URI+"update",
+				complaint);
+		
+		LOGGER.info("\nOC-updateComplaint -  updatedcomplaint \n");
+	}
+	//loadallcomplaintofaPG 
+	private List<Complaint> loadAllComplaintsOfPg(HttpSession session) throws ZeroComplaintsException
+	{
+		LOGGER.info("\nOC-loadAllComplaintsOfPg -  pgId \n");
+		
+		Pg pg = (Pg) session.getAttribute("pg");
+		
+		Complaint[] complaintsArray = restTemplate.getForObject(COMPLAINT_SERVICE_URI+"findAll/{pgId}", 
+				Complaint[].class, 
+				pg.getPgId());
+		
+		//if there are no complaints then throw ex
+		
+//		if(complaintsArray == null || complaintsArray.length <= 0)
+//		{
+//			LOGGER.info("\nOC-loadAllComplaintsOfPg -  complaintsArray or "
+//					+ "complaintsArray.length <= 0  \n"+complaintsArray);
+//			
+//			throw new ZeroComplaintsException()
+//		}
+		
+		//check for empty complaint box
+		//isComplaintBoxEmpty(complaintsArray);
+		
+		//List<Complaint> pgAllComplaintsList = Arrays.asList(complaintsArray);
+		
+		List<Complaint> pgAllComplaintsList = getNonEmptyComplainBox(complaintsArray);
+		
+		LOGGER.info("\nOC-loadAllComplaintsOfPg -  returning pgAllComplaintsList  \n"+pgAllComplaintsList);
+		
+		return pgAllComplaintsList ;
+	}
+	
+	
+	
+    private Complaint searchComplaint(long complaintId)
+    {
+    	LOGGER.info("\nOC-searchComplaint -  complaintId \n"+complaintId);
+    	
+    	Complaint complaint = restTemplate.getForObject(COMPLAINT_SERVICE_URI+"find/{complaintId}",
+    			Complaint.class, 
+    			complaintId);
+    	
+    	LOGGER.info("\nOC-searchComplaint -  found complaint \n"+complaint);
+    	
+    	return complaint ;
+    	
+    }
+	
+	private Map<Complaint, InMate> loadComplaintedInMates(List<Complaint>  complaintsList)
+	{
+		LOGGER.info("\nOC-loadComplaintedInMates -  complaintsList \n"+complaintsList);
+		
+		Map<Complaint, InMate > complaintsMap = new LinkedHashMap<Complaint, InMate>();
+		
+		for(Complaint complaint :complaintsList)
+		{
+			LOGGER.info("oc -loadComplaintedInMates -for  complaint = \n "+complaint);
+			
+			//for each complaint load its inmate
+			InMate complaintsInMate = searchInMate(complaint.getInMate());
+			
+			LOGGER.info("oc -loadComplaintedInMates -for  complaint  loaded inmate = \n "+complaintsInMate);
+			
+			
+			//complaintsMap.put(complaintsInMate, complaint);
+			
+			complaintsMap.put(complaint, complaintsInMate);
+			
+		}
+		LOGGER.info("oc -loadComplaintedInMates -returnoing map = \n "+complaintsMap);
+		return complaintsMap ;
+	}
+	
+		
+	private InMate searchInMate(long inMateId)
+	{
+		LOGGER.info("\n\nOC-searchInMate - inMateId =  "+inMateId);
+		
+		InMate inMate = restTemplate.getForObject(INMATE_SERVICE_URI+"find/{inMateId}",
+				InMate.class,
+				inMateId);
+		
+		LOGGER.info("\n\nOC-searchInMate - foundinmate = returning inmate= \n "+inMate);
+		
+		return inMate ;
+				
+				
+	}
+	private Object whoIsLoggedInUser(HttpSession session)
+	{
+
+		LOGGER.info("\nOC-whoIsUser \n");
+		Object object = session.getAttribute("owner");
+		
+		if(object != null && object instanceof Owner)
+		{
+			LOGGER.info("\n oc- whoIsUser owner is logged in, owner = \n"+object);
+			LOGGER.info("\nso returning owner");
+			return object;
+		}
+		else
+		{
+			object = session.getAttribute("inMate");
+			if(object != null && object instanceof InMate)
+			{
+				LOGGER.info("\n  oc- whoIsUser -inMate is logged in, inMate = \n"+object);
+				LOGGER.info("\nso returning inMate\n");
+				return object ;
+			}
+			else
+			{
+				LOGGER.info("\n  oc- whoIsUser -neither is is logged in,");
+				LOGGER.info("\nso returning null\n");
+				return null;
+			}
+		}
+		
+    }
+	
+	private Pg loadMyPg(long pgId)
+	{
+		LOGGER.info("\nOC -loadMyPg - wit pgid = \n"+pgId);
+		//long pgId = owner.getMyPg();
+		// PG_SERVICE_URI = http://localhost:8082/pg/
+		// "http://localhost:8080/employee/{id}";
+		Pg pg = restTemplate.getForObject(PG_SERVICE_URI + "findPgById/{pgId}", Pg.class, pgId);
+		
+		return pg;
+	}
 	private void updateRoom(Room room)
 	{
 		LOGGER.info("OC -updateRoom-  for room = "+room);
 		restTemplate.put(ROOM_SERVICE_URI+"updateRoom", room);
 	}
+	
 	//loadallrooms
 		private List<Room> loadAllRoomsOfAPg(HttpSession session)
 		{
@@ -198,6 +443,7 @@ public class OwnerController
 	{
 		System.out.println("\n searchRoom \n");
 		
+		LOGGER.info("\n OC -searchRoom - with roomnumber= "+roomNumber+ " and \n pgid = "+myPg);
 		String findRoomUrl =ROOM_SERVICE_URI+"/findRoomByRoomNumberAndMyPg/"
 				+ "roomNumber/{roomNumber}/"
 				+ "myPg/{myPg}";
@@ -270,7 +516,7 @@ public class OwnerController
 
 	@PostMapping(value = "/registerOwner")
 	public ModelAndView registerOwner(@Valid Owner owner, BindingResult br,
-			HttpSession hs, ModelAndView modelAndView) {
+			HttpSession session, ModelAndView modelAndView) {
 		System.out.println("\n OwnerController registerOwner()\n");
 		// ModelAndView modelAndView = new ModelAndView();
 		if (br.hasErrors()) {
@@ -295,6 +541,16 @@ public class OwnerController
 							+ repeatPwd + "\" are same ?";
 					throw new PasswordMissMatchException(errorStr);
 				}
+				//check for duplicate user(inmate)
+				boolean isDuplicateInMate = isDuplicateInMate(owner.getPhoneNumber());
+				
+				if(isDuplicateInMate)
+				{
+					LOGGER.info("OC-registerowner- isDuplicateInMate yes-");
+					
+					throw new DuplicateInMateException();
+					
+				}
 				// check for duplicate owner here
 
 			
@@ -308,7 +564,7 @@ public class OwnerController
 
 					// need to add pgbean to M
 					modelAndView.addObject("pg", new Pg());
-					hs.setAttribute("owner", owner);
+					session.setAttribute("owner", owner);
 
 					/*
 					 * //testcing copy by value or address in session //Owner ownerFromSession =
@@ -329,9 +585,7 @@ public class OwnerController
 					return modelAndView;
 
 				} else {
-					throw new DuplicateOwnerException("A account allready exist  with same phone number = "
-
-							+ owner.getPhoneNumber());
+					throw new DuplicateOwnerException();
 				}
 				// do not create a pgOwnerbean now
 				// redirect to crate pg page
@@ -341,10 +595,13 @@ public class OwnerController
 				// return "OwnerHome";
 			}
 
-			catch (DuplicateOwnerException e) {
+			catch (DuplicateOwnerException |DuplicateInMateException e) 
+			{
 				e.printStackTrace();
+				
+				String errorMessage ="A account allready exist  with same phone number = "+ owner.getPhoneNumber();
 				// m.addAttribute("dupUserErrorMessage", e.getLocalizedMessage());
-				modelAndView.addObject("dupUserErrorMessage", e.getLocalizedMessage());
+				modelAndView.addObject("dupUserErrorMessage",errorMessage);
 				modelAndView.setViewName("RegisterOwner");
 				return modelAndView;
 			} catch (PasswordMissMatchException e) {
@@ -599,9 +856,9 @@ public class OwnerController
 	// logout
 	// @DeleteMapping("/logOut")
 	@GetMapping(value = "/logOut")
-	public ModelAndView logOut(ModelAndView modelAndView, HttpSession hs) {
+	public ModelAndView logOut(ModelAndView modelAndView, HttpSession session) {
 		try {
-			hs.invalidate();
+			session.invalidate();
 			String signOutStr = "You are signed out";
 
 			modelAndView.addObject("signOutMessage", signOutStr);
@@ -620,9 +877,39 @@ public class OwnerController
 
 	//// back to owenHome from viewpgdetaisl
 	@GetMapping("/back")
-	public ModelAndView backToOwnerHome(ModelAndView modelAndView) {
+	public ModelAndView backToHome(ModelAndView modelAndView,HttpSession session) {
 		try {
-			modelAndView.setViewName("OwnerHome");
+			
+//			Object object = session.getAttribute("owner");
+//			
+//			if(object != null && object instanceof Owner)
+//			{
+//				//back to owner home
+//				LOGGER.info("OC-backToHome- yes its owner so returnng t ownerhome");
+//				modelAndView.setViewName("OwnerHome");
+//			}
+//			else
+//			{
+//				LOGGER.info("OC-backToHome- yes its inmate so returnng t inmatehome");
+//				modelAndView.setViewName("InMateHome");
+//			}
+			
+			Object loggedInUser = whoIsLoggedInUser(session);
+			
+			if(loggedInUser == null)
+			{
+				throw new NullPointerException(Constants.SESSION_ENDED);
+			}
+			else if(loggedInUser instanceof Owner)
+			{
+				LOGGER.info("OC-backToHome- yes its owner so returnng t ownerhome");
+				modelAndView.setViewName("OwnerHome");
+			}
+			else if(loggedInUser instanceof InMate)
+			{
+				LOGGER.info("OC-backToHome- yes its inmate so returnng t inmatehome");
+				modelAndView.setViewName("InMateHome");
+			}
 			return modelAndView;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -635,10 +922,26 @@ public class OwnerController
 		}
 	}
 
+//	//back to InMate home
+//	@GetMapping("/back")
+//	public ModelAndView backToOwnerHome(ModelAndView modelAndView) {
+//		try {
+//			modelAndView.setViewName("OwnerHome");
+//			return modelAndView;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.out.println("\n Ownercontroller backToOwnerHome() excetion = \n" + e.getLocalizedMessage());
+//			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+//
+//			modelAndView.setViewName("Error");
+//
+//			return modelAndView;
+//		}
+//	}
 	// logIn
 	@PostMapping("/logIn")
 	public ModelAndView logIn(@RequestParam("phoneNumber") String phoneNumber,
-			@RequestParam("password") String password, ModelAndView modelAndView, HttpSession hs) {
+			@RequestParam("password") String password, ModelAndView modelAndView, HttpSession session) {
 		try {
 			// check for validations
 			if (phoneNumber == null || phoneNumber.trim().length() == 0) {
@@ -655,7 +958,8 @@ public class OwnerController
 			// Owner pgOwnerBean = pgOwnerService.findOwner(phoneNumber, password);
 
 			List<Owner> ownersList = ownerService.findByPhoneNumberAndPassword(phoneNumber, password);
-			if (ownersList != null && ownersList.size() > 0) {
+			if (ownersList != null && ownersList.size() > 0) 
+			{
 				System.out.println("\n ownersList != null && ownersList.size() > 0 , ownersList = \n" + ownersList);
 
 				// ownersList.forEach(System.out::println);
@@ -663,25 +967,29 @@ public class OwnerController
 				System.out.println("\n ownersList.get(0) = \n" + ownersList.get(0));
 				Owner owner = ownersList.get(0);
 
-				if (owner != null) {
+				if (owner != null)
+				{
 					// GET respective Pg of owner being logged in using pgservice
 
 					// Pg pg = new Pg();
-					long pgId = owner.getMyPg();
-					// PG_SERVICE_URI = http://localhost:8082/pg/
-					// "http://localhost:8080/employee/{id}";
-					Pg pg = restTemplate.getForObject(PG_SERVICE_URI + "findPgById/{pgId}", Pg.class, pgId);
+//					long pgId = owner.getMyPg()
+//					// PG_SERVICE_URI = http://localhost:8082/pg/
+//					// "http://localhost:8080/employee/{id}";
+//					Pg pg = restTemplate.getForObject(PG_SERVICE_URI + "findPgById/{pgId}", Pg.class, pgId);
+					
+					Pg pg = loadMyPg(owner.getMyPg());
+					
 					System.out.println("\n loaded pg from microservice pg = \n" + pg);
 
 					if (pg != null) {
 						// add pg to session
-						hs.setAttribute("pg", pg);
+						session.setAttribute("pg", pg);
 						// add owner to session
-						hs.setAttribute("owner", owner);
+						session.setAttribute("owner", owner);
 
 						modelAndView.setViewName("OwnerHome");
 
-						return modelAndView;
+						//return modelAndView;
 					} else {
 						// pg cant be loaded
 						System.out.println("\n culdnt load owenr's pg\n");
@@ -692,11 +1000,69 @@ public class OwnerController
 					// owner == null
 //	    					modelAndView.setViewName("OwnerHome");
 //			    			return modelAndView ;
+					//throw new Exception("we couldn't find your record, try again");
+					
+					//try for inmate login
+					LOGGER.info("OC - login- owner == null");
+				
+				}
+			} 
+			else
+			{
+				
+				//throw new InvalidCredentialsException("Incorrect Phone number OR/AND incorrect password");
+				
+				LOGGER.info("OC - login- trying to login as inmate \n\n");
+				
+				String searchInMateURL = INMATE_SERVICE_URI+"find/phoneNumber/{phoneNumber}/password/{password}";
+				
+				InMate inMate = restTemplate.getForObject(searchInMateURL,
+						InMate.class, 
+						phoneNumber,password);
+				
+				LOGGER.info("OC - login-  loaded inmate = \n\n"+inMate);
+				
+				if(inMate == null )
+				{
+					LOGGER.info("OC - login-  loaded inmate is null i.e  = \n\n"+inMate);
 					throw new Exception("we couldn't find your record, try again");
 				}
-			} else {
-				throw new InvalidCredentialsException("Incorrect Phone number OR/AND incorrect password");
+				else
+				{
+					LOGGER.info("OC - login-  loaded inmate is not null and i.e.= \n\n"+inMate);
+					
+					//load pg
+					Pg pg = loadMyPg(inMate.getMyPg());
+					
+					if (pg != null) {
+						// add pg to session
+						session.setAttribute("pg", pg);
+						// add owner to session
+						session.setAttribute("inMate", inMate);
+
+						//modelAndView.setViewName("OwnerHome");
+
+						//return modelAndView;
+						
+						modelAndView.setViewName("InMateHome");
+					} else {
+						// pg cant be loaded
+						System.out.println("\n culdnt load inmates pg\n");
+						String errorMessage = "Could Not Load Your Pg" + " Please try again after some time";
+						throw new CouldNotLoadYourPgException(errorMessage);
+					}
+					
+					
+					//login
+					//session.setAttribute("inMate", inMate);
+					
+					//modelAndView.setViewName("InMateHome");
+					
+					LOGGER.info("OC - login-  \n");
+					//return modelAndView;
+				}
 			}
+			return modelAndView;
 
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -730,9 +1096,11 @@ public class OwnerController
 		} catch (Exception e) {
 			e.printStackTrace();
 			// return to welcome page
+			
 			String loginErrorMessageStr = "Sorry we could not allow you to login due to some reasons,i.e"
 					+ e.getLocalizedMessage() + " printstacktrace = " + e.getMessage() + e.fillInStackTrace()
 					+ e.getCause() + e.getClass();
+			
 			// m.addAttribute("loginErrorMessage",loginErrorMessageStr+" ,"+
 			// e.getLocalizedMessage());
 
@@ -757,10 +1125,55 @@ public class OwnerController
 	}
 
 	// viewOwnerDetails
-	@GetMapping(value = "/viewOwnerDetails")
-	public ModelAndView viewOwnerDetails(ModelAndView modelAndView) {
+//	@GetMapping(value = "/viewOwnerDetails")
+	@GetMapping(value = "/viewMyDetails")
+	public ModelAndView viewMyDetails(ModelAndView modelAndView,HttpSession session) {
 		try {
-			modelAndView.setViewName("ViewOwnerDetails");
+			//Object object = new Owner();
+			
+//			Object object = session.getAttribute("owner");
+//			
+//			//Object user = null;
+//			if(object != null && object instanceof Owner)
+//			{
+//				LOGGER.info("\nOC -viewMyDetails - object is instanceof Owner \n");
+//				//user = object ;
+//				modelAndView.addObject("user", object);
+//				//modelAndView.setViewName("ViewOwnerDetails");
+//			}
+//			else
+//			{
+//				LOGGER.info("\nOC -viewMyDetails - object is not instanceof Owner \n");
+//				Object object2 = session.getAttribute("inMate");
+//				
+//				if(object2 != null && object2 instanceof InMate)
+//				{
+//					LOGGER.info("\nOC -viewMyDetails - object2 is instanceof inMate \n");
+//					//user = object2;
+//					modelAndView.addObject("user", object2);
+//				}
+//			}
+		       Object loggedInUser = whoIsLoggedInUser(session);
+		     
+				if(loggedInUser instanceof Owner)
+				{
+					LOGGER.info("OC-viewMyDetails- yes loggedInUser instanceof Owner ");
+					LOGGER.info("OC-viewMyDetails- so moving to ViewOwnerDetails \n\n");
+					modelAndView.setViewName("ViewOwnerDetails");
+				}
+				else if(loggedInUser instanceof InMate)
+				{
+					LOGGER.info("OC-viewMyDetails- yes loggedInUser instanceof InMate");
+					LOGGER.info("OC-viewMyDetails- so moving to ViewMyDetails\n\n ");
+					modelAndView.setViewName("ViewInMateDetails");
+				}
+				else
+				{
+					throw new NullPointerException(Constants.SESSION_ENDED);
+				}
+		
+			modelAndView.addObject("user", loggedInUser);
+			
 			return modelAndView;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -770,16 +1183,46 @@ public class OwnerController
 	}
 
 	// openEditOwnerDetails view
-	@GetMapping(value = "/openEditOwnerDetails")
-	public ModelAndView openEditOwnerDetails(ModelAndView modelAndView, HttpSession hs) {
+	//@GetMapping(value = "/openEditOwnerDetails")
+	@GetMapping(value = "/editMyDetails")
+	public ModelAndView editMyDetails(ModelAndView modelAndView, HttpSession session) 
+	{
 		try {
-			Owner owner = (Owner) hs.getAttribute("owner");
-
-			modelAndView.setViewName("EditOwnerDetails");
-			modelAndView.addObject("owner", owner);
+			//Owner owner = (Owner) session.getAttribute("owner");
+			LOGGER.info("OC- editMyDetails - try");
+			Object loggedInUser = whoIsLoggedInUser(session);
+			
+			if(loggedInUser instanceof Owner)
+			{
+				LOGGER.info("OC- editMyDetails - loggedInUser instanceof Owner");
+				LOGGER.info("so returning to EditOwnerDetails ");
+				
+				modelAndView.addObject("owner", loggedInUser);
+				
+				modelAndView.setViewName("EditOwnerDetails");
+			}
+			else if (loggedInUser instanceof InMate)
+			{
+				LOGGER.info("OC- updateInMate - loggedInUser instanceof InMate");
+				LOGGER.info("so returning to EditMyDetails ");
+				
+				modelAndView.addObject("inMate", loggedInUser);
+				
+				modelAndView.setViewName("EditMyDetails");
+			}
+			else
+			{
+				LOGGER.info("OC- updateInMate - loggedInUser instanceof InMate");
+			}
+			
+			
+			
 			return modelAndView;
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			e.printStackTrace();
+			LOGGER.info("OC- editMyDetails - Exception e = \n "+e.getMessage());
+			
 			System.out.println("\n openEditOwnerDetails catch (Exception e) ()\n");
 
 			modelAndView.setViewName("OwnerHome");
@@ -797,7 +1240,7 @@ public class OwnerController
 	// br,ModelAndView modelAndView)
 	@PostMapping(value = "/updateOwner")
 	public ModelAndView updateOwner(@Valid Owner owner, BindingResult br,
-			ModelAndView modelAndView, HttpSession hs) {
+			ModelAndView modelAndView, HttpSession session) {
 		if (br.hasErrors()) {
 			System.out.println("\n updateOwner br.hasErrors() with Invalid owner = \n" + owner);
 			// return "EditOwnerDetails";
@@ -836,7 +1279,7 @@ public class OwnerController
 				System.out.println("\n updatedOwner =\n" + updatedOwner);
 
 				// set back to HS
-				hs.setAttribute("owner", updatedOwner);
+				session.setAttribute("owner", updatedOwner);
 
 				String ownerDetailsUpdatedSuccesMessageStr = "Your details have been updated successfully as follows";
 				modelAndView.addObject("ownerDetailsUpdatedSuccesMessage", ownerDetailsUpdatedSuccesMessageStr);
@@ -874,7 +1317,7 @@ public class OwnerController
 			// m.addAttribute("pgBean", pgBean);
 
 			// return "ViewPgDetails";
-			modelAndView.setViewName("ViewPgDetails");
+			modelAndView.setViewName("ViewOwnerPgDetails");
 			return modelAndView;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -883,7 +1326,7 @@ public class OwnerController
 
 			// return "OwnerHome";
 
-			modelAndView.setViewName("OwnerHome");
+			modelAndView.setViewName("Error");
 			return modelAndView;
 		}
 	}
@@ -1270,6 +1713,7 @@ public class OwnerController
 			catch(DuplicateRoomException e)
 			{
 				System.out.println("catch (DuplicateRoomException e)");
+				LOGGER.error("\n addaroom - DuplicateRoomException = \n", e);
 				String duplicateRoomStr = "U have forgotten that  "
 						+"  room with "
 						+ " "+room.getRoomNumber()+" already exist in ur Pg, ?"
@@ -1331,7 +1775,7 @@ public class OwnerController
 			
 			modelAndView.addObject("rooms",rooms);
 			
-			modelAndView.setViewName("ViewRooms");
+			modelAndView.setViewName("ViewOwnerRooms");
 
 			return modelAndView ;
 		} 
@@ -1812,7 +2256,7 @@ public class OwnerController
            // InMate inMate =
             //add inmate 
             LOGGER.info("going to add inamte to model = "+inMate);
-            System.out.println("going to add inamte to model = "+inMate);
+            //System.out.println("going to add inamte to model = "+inMate);
            modelAndView.addObject("inMate", inMate);
             //modelAndView.addObject("inmate",inmate);
 
@@ -1879,27 +2323,40 @@ public class OwnerController
 							+ " please change his phone number if I am wrong";
 					throw new DuplicateOwnerException(errorMessage);
 				}
+				//check whetether inmate is owner of any other pG
+				
+				boolean isOwnerOfAnotherPg = isDuplicateOwner(inMate.getPhoneNumber());
+				
+				if(isOwnerOfAnotherPg)
+				{
+					throw new DuplicateOwnerException("The InMate u r trying to add to ur PG is Owner of some other Pg ,"
+							+ ".. so Cant sorry");
+				}
 				
 				
 				//check wether phonenumber clashes with any other inmate's phonenumber of the same PG
 				
-//				restTemplate.getForEntity(INMATE_SERVICE_URI+"find",
-//						responseType,
-//						uriVariables)
-				String searchInMateURL = INMATE_SERVICE_URI+"/find/{phoneNumber}/{pgId}";
+		
 				
-//				InMate searchedInMate = restTemplate.getForObject(searchInMateURL,
-//						InMate.class,
-//						inMate.getPhoneNumber(),inMate.getMyPg());
+				Boolean isInMateExist = isDuplicateInMate(inMate.getPhoneNumber());
 				
-				Boolean isInMateExist = restTemplate.getForObject(searchInMateURL,
-						Boolean.class,
-						inMate.getPhoneNumber(),inMate.getMyPg());
 				if(isInMateExist == false)
 				{
 					//continue adding 
 					//set password as last step b4 saving :) coz we have not set it in addinmate api
-					  inMate.setPassword(InMate.generatePassword()); 
+					 
+					
+					
+					
+					//inMate.setPassword(InMate.generatePassword()); 
+					
+					
+					//change afterwards b4 production
+					inMate.setPassword("1");
+					
+					
+					
+					
 			           
 					  //set roomid i.e myRoom to inmate
 					  inMate.setMyRoom((Long) session.getAttribute("roomId"));
@@ -2044,9 +2501,8 @@ public class OwnerController
 		{
 			
 			//load InMate 
-			InMate inMate = restTemplate.getForObject(INMATE_SERVICE_URI+"/find/{inMateId}",
-					InMate.class,
-					inMateId);
+			
+					InMate inMate = searchInMate(inMateId);
 			
 			//add inmate to Model
 			modelAndView.addObject("inMate", inMate);
@@ -2109,13 +2565,29 @@ public class OwnerController
 			HttpSession session,
 			@RequestParam String roomNumber)
 	{
+		Object loggedInUser = whoIsLoggedInUser(session);
 		if(result.hasErrors())
 		{
 			System.out.println("\n updateInMate BindingResult failed br = \n"+result);
 			//System.out.println("PGHC -> updateInMate br has errors ");
 			modelAndView.addObject("roomNumber",roomNumber);
 			//return "EditInMate";
-			modelAndView.setViewName("EditInMate");
+			
+			
+			
+			if(loggedInUser instanceof Owner)
+			{
+				LOGGER.info("OC- updateInMate - loggedInUser instanceof Owner");
+				LOGGER.info("so returning to EditInMate ");
+				modelAndView.setViewName("EditInMate");
+			}
+			else if (loggedInUser instanceof InMate)
+			{
+				LOGGER.info("OC- updateInMate - loggedInUser instanceof InMate");
+				LOGGER.info("so returning to EditMyDetails ");
+				modelAndView.setViewName("EditMyDetails");
+			}
+			
 			return modelAndView ;
 		}
 		else
@@ -2156,9 +2628,32 @@ public class OwnerController
 				
 				restTemplate.put(INMATE_SERVICE_URI+"update", inMate);
 				
-                modelAndView.addObject("successMessage","ur inMate's details successfully updated pls check");
 				
-				modelAndView.setViewName("OwnerHome");
+				if(loggedInUser instanceof Owner)
+				{
+					LOGGER.info("OC- updateInMate - loggedInUser instanceof Owner n updated inmate ");
+					LOGGER.info("so returning to OwnerHome ");
+					  modelAndView.addObject("successMessage","ur inMate's details successfully updated pls check");
+						
+						modelAndView.setViewName("OwnerHome");
+				}
+				else if (loggedInUser instanceof InMate)
+				{
+					LOGGER.info("OC- updateInMate - loggedInUser instanceof InMate n updated inmate ");
+					LOGGER.info("so returning to inMateHome ");
+					  modelAndView.addObject("successMessage","ur details successfully updated pls check");
+						//adding loggedInUser to satisfy view
+					  modelAndView.addObject("user", inMate);
+					  
+					  session.setAttribute("inMate", inMate);
+						modelAndView.setViewName("ViewInMateDetails");
+				}
+				else
+				{
+					throw new NullPointerException(Constants.SESSION_ENDED);
+				}
+				
+              
 				
 				return modelAndView ;
 //				modelAndView.setViewName("OwnerHome");
@@ -2198,6 +2693,7 @@ public class OwnerController
 		
 	}
 	
+
 	@PostMapping(value = "/confirmDeleteInMate")
 	public ModelAndView confirmDeleteInMate(@RequestParam long inMateId, ModelAndView modelAndView,
 			@RequestParam String firstName ,
@@ -2671,85 +3167,1106 @@ public class OwnerController
 		}
 	}
 	
-	//openComplaintBox
+	//openComplaintBox viewAllComplaints
 	//@RequestMapping(value="/openComplaintBox",method=RequestMethod.GET)
-	@GetMapping(value = "/openComplaintBox")
-	public ModelAndView openComplaintBox(ModelAndView modelAndView,HttpSession session)
+//	@GetMapping(value = "/openComplaintBox")
+	@GetMapping(value = "/viewAllComplaints")
+	public ModelAndView viewAllComplaints(ModelAndView modelAndView,HttpSession session)
 	{
+		Object loggedInUser = whoIsLoggedInUser(session);
+		
 		try
 		{
-			//PGOwner pgOwnerBean = (PGOwner)hs.getAttribute("pgOwnerBean");
+			if(loggedInUser == null) 
+			{
+				throw new SessionTimedOutException(Constants.SESSION_ENDED);
+			}
 			
-			//Owner owner =(Owner) session.getAttribute("owner");
+			//Pg pg = (Pg)session.getAttribute("pg");
 			
-			Pg pg = (Pg)session.getAttribute("pg");
-			
-			LOGGER.info("oc -openComplaintBox -try");
+			LOGGER.info("oc -viewAllComplaints-try");
 			System.out.println("PGHC openComplaintBox(Model m)");
 			
 			//load all complaints from db
 			//List<Complaint> complaintsList = complaintService.loadAllComplaintsOfAPG(pgOwnerBean.getMyPG());
 			
-			Complaint[] complaintsArray = restTemplate.getForObject(COMPLAINT_SERVICE_URI+"findAll/{pgId}", 
-					Complaint[].class, 
-					pg.getPgId());
+						
+			//List<Complaint> pgAllComplaintsList = loadAllComplaintsOfPg(pg.getPgId());
 			
-			
-			List<Complaint> complaintsList = Arrays.asList(complaintsArray);
+			//List<Complaint> pgAllComplaintsList = loadAllComplaintsOfPg(session);
 			
 			//if no complaints 
-			if(complaintsList == null || complaintsList.isEmpty() )
+		/*	if(pgAllComplaintsList == null || pgAllComplaintsList.isEmpty() )
 			{
 				
 					System.out.println("\nPGHC opencomlBOx -> comlist size = 0");
-					LOGGER.info("oc -openComplaintBox -comlist size = 0");
-					String errorMessage = "There are no complaints in your PG";
+					LOGGER.info("oc -viewAllComplaints-THERE R NO CMPLAINTS YET-comlist size = 0, ");
+					String errorMessage = "There are no complaints in your Pg";
 					
 					//m.addAttribute("emptyComplaintBoxMessage", emptyComplaintBoxMessageStr);
 					//return "ViewAllComplaintsOfPG";
 					
 					modelAndView.addObject("errorMessage", errorMessage);
 					
-					modelAndView.setViewName("OwnerHome");
-						
-					return modelAndView ;
-			}
-				else
-				{
-					System.out.println("\nPGHC opencomlBOx -> comlist size > 0");
-					LOGGER.info("oc -openComplaintBox -comlist size > 0");
+					if(loggedInUser instanceof Owner)
+					{
+						LOGGER.info("OC-viewAllComplaints- yes loggedInUser instanceof Owner ");
+						LOGGER.info("OC-viewAllComplaints- so moving to OwnerHome \n\n");
+						modelAndView.setViewName("OwnerHome");
+					}
+					else if(loggedInUser instanceof InMate)
+					{
+						LOGGER.info("OC-viewAllComplaints- yes loggedInUser instanceof InMate");
+						LOGGER.info("OC-viewAllComplaints- so moving to InMateHome\n\n ");
+						modelAndView.setViewName("InMateHome");
+					}
+					else
+					{
+						throw new NullPointerException(Constants.SESSION_ENDED);
+					}
 					
-					Set<Complaint> complaintsSet = new LinkedHashSet<Complaint>(complaintsList);
-					int complaintSLNumber = 1;
+					return modelAndView ;
+			}*/
+				//else
+				//{
+					System.out.println("\nPGHC opencomlBOx -> comlist size > 0");
+					LOGGER.info("oc -viewAllComplaints-comlist size > 0");
+					
+					//call localapi 
+					Map<Complaint, InMate> complaintedInMatesMap = makeUpReturnToViewAllComplaints(session);
+					
+					
+					//Set<Complaint> complaintsSet = new LinkedHashSet<Complaint>(complaintsList);
+					//int complaintSLNumber = 1;
 					//m.addAttribute("complaintSLNumber", complaintSLNumber);
 					//m.addAttribute("complaintsSet", complaintsSet);
 					//return "ViewAllComplaintsOfPG";
 					
-					modelAndView.addObject("complaintSLNumber", complaintSLNumber);
+					//modelAndView.addObject("complaintSLNumber", complaintSLNumber);
 					
-					modelAndView.addObject("complaintsSet", complaintsSet);
+					//modelAndView.addObject("complaintsSet", complaintsSet);
 					
-					modelAndView.setViewName("ViewComplaints");
+//					if(loggedInUser == null )
+//					{
+//						//throw new NullPointerException(Constants.SESSION_ENDED);
+//						throw new SessionTimedOutException(Constants.SESSION_ENDED);
+//						
+//					}
+					//else
+					//{
+						//Map<InMate, Complaint> complaintedInMatesMap = loadComplaintedInMates(pgAllComplaintsList);
+						
+						//Map<Complaint, InMate> complaintedInMatesMap = loadComplaintedInMates(pgAllComplaintsList);
+						 
+						
+						modelAndView.addObject("complaintedInMatesMap", complaintedInMatesMap);
+						
+						LOGGER.info("OC-viewALlComplaintBox- complaintedInMatesMap = \n "+complaintedInMatesMap);
+						
+						if(loggedInUser instanceof Owner)
+						{
+							LOGGER.info("OC-openComplaintBox- yes loggedInUser instanceof Owner ");
+							LOGGER.info("OC-openComplaintBox- so moving to ViewOwnerAllComplaints \n\n");
+							//modelAndView.setViewName("ViewOwnerAllComplaints");
+							
+							modelAndView.setViewName("OwnerViewPgAllComplaints");
+						}
+						else if(loggedInUser instanceof InMate)
+						{
+							LOGGER.info("OC-openComplaintBox- yes loggedInUser instanceof InMate");
+							LOGGER.info("OC-openComplaintBox- so moving to InMateViewPgAllComplaints\n\n ");
+							//modelAndView.setViewName("ViewInMateAllComplaints");
+							
+							modelAndView.setViewName("InMateViewPgAllComplaints");
+						}
+					//}
 				
-					LOGGER.info("oc -openComplaintBox -complaintSLNumber= \n "+complaintSLNumber);
-					
 					return modelAndView ;
-				}
+				//}
 				
+		}
+		catch (SessionTimedOutException e)
+		{
+			e.printStackTrace();
+			LOGGER.info("OC-viewAllComplaints- SessionTimedOutException\n so returning to login page ");
+			
+			modelAndView.addObject("errorMessage", e.getMessage());
+			modelAndView.setViewName("Welcome");
+			
+			return modelAndView ;
+			
+		}
+		catch (ZeroComplaintsException e)
+		{
+			LOGGER.info("oc -viewAllComplaints-ZeroComplaintsInPgException -"
+					+ "THERE R NO CMPLAINTS YET-comlist size = 0, ");
+			String errorMessage = "There are no complaints in your Pg as of now";
+					
+			modelAndView.addObject("errorMessage", errorMessage);
+			
+			
+			if(loggedInUser instanceof Owner)
+			{
+				LOGGER.info("OC-viewAllComplaints- yes loggedInUser instanceof Owner ");
+				LOGGER.info("OC-viewAllComplaints- so moving to OwnerHome \n\n");
+				
+				modelAndView.setViewName("OwnerHome");
+			}
+			else if(loggedInUser instanceof InMate)
+			{
+				LOGGER.info("OC-viewAllComplaints- yes loggedInUser instanceof InMate");
+				LOGGER.info("OC-viewAllComplaints- so moving to InMateHome\n\n ");
+				modelAndView.setViewName("InMateHome");
+			}
+			
+			return modelAndView;
+			
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			//m.addAttribute("errorMessage",e.getLocalizedMessage());
-			////return "Error";
 			
-	modelAndView.addObject("errorMessage", e.getMessage());
+			LOGGER.info("OC-viewallcomplaints- Exception - e = \n "+e.getLocalizedMessage());
+			
+	        modelAndView.addObject("errorMessage", e.getMessage());
 			
 			modelAndView.setViewName("Error");
 				
 			return modelAndView ;
 		}
 	}
+	
+	//INMATE FASILITIES
+	
+	//viewInMatePgDetails
+	
+	@GetMapping(value = "/viewInMatePgDetails")
+	public ModelAndView viewInMatePgDetails(ModelAndView modelAndView)
+	{
+		try
+		{
+			LOGGER.info("OC-viewInMatePgDetails try");
+			
+            modelAndView.setViewName("viewInMatePgDetails");
+			
+			return modelAndView ;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			LOGGER.info("OC-viewInMatePgDetails Exception e = \n  "+e.getLocalizedMessage());
+			
+			modelAndView.setViewName("Error");
+			
+			return modelAndView ;
+			
+		}
+	}
 
+	//viewRooms by inmate
+	@GetMapping(value = "/viewPgRooms")
+	public ModelAndView viewPgRooms(ModelAndView modelAndView,HttpSession session)
+	{
+	
+		try
+		{
+			LOGGER.info("OC- viewPgRooms - try");
+			
+			List<Room> rooms = loadAllRoomsOfAPg(session);
+		
+			modelAndView.addObject("rooms",rooms);
+			
+			modelAndView.setViewName("ViewInMateAllRooms");
+
+			return modelAndView ;
+		} 
+		catch (EmptyPgException e)
+		{
+			e.printStackTrace();
+			
+			LOGGER.info("OC- viewPgRooms - EmptyPgException e = \n "+e.getLocalizedMessage());
+			
+			System.out.println("\n openaddInMate () Exception e \n");	
+			
+			String errorMessage = "There are no rooms in your pg,please add ASAP to add InMates";
+
+			
+			modelAndView.addObject("errorMessage", errorMessage);
+			
+			modelAndView.setViewName("InMateHome");
+						
+			return modelAndView ;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			
+			LOGGER.info("OC- viewPgRooms - Exception e = \n "+e.getLocalizedMessage());
+			
+			modelAndView.addObject("errorMessage", e.getLocalizedMessage());
+
+			//return "Error";
+			
+			modelAndView.setViewName("Error");
+			return modelAndView ;
+		}
+	}
+	
+	    //viewInMateDues
+		@GetMapping(value = "/viewInMateDues")
+		public ModelAndView viewInMateDues(ModelAndView modelAndView,HttpSession session)
+		{
+			try
+			{
+				//PGOwner pgOwnerBean = (PGOwner)hs.getAttribute("pgOwnerBean");
+				LOGGER.info("oc-viewInMateDues -try");
+				Owner owner = (Owner) session.getAttribute("owner");
+				
+	
+				//List<InMate> inMatesList = loadAllInMatesOfAPg(session);
+				
+				InMate inMate = (InMate) session.getAttribute("inMate");
+				
+				LOGGER.info("oc-viewInMateDues -after loading inmate from session =\n "+inMate);
+				
+				//one map to hold all inmates dues with total months count and total dues so far
+				LOGGER.info("oc-viewInMateDues-b4 allInMatesDuesMap decalre =\n ");
+				
+				//Map<InMate, List<String>> allInMatesDuesMap = new TreeMap<InMate,List<String>>();
+				
+				Map<InMate, List<String>> allInMatesDuesMap = new HashMap<InMate, List<String>>();
+				
+				LOGGER.info("oc-viewInMateDues-after allInMatesDuesMap decalre allInMatesDuesMap =\n ");
+				
+				Date today = new Date();
+				
+				String currentMonthStr = today.toString().substring(0,19);
+			
+				//for(InMate inMate:inMatesList)
+				//{
+					System.out.println("\n\n FOR single INMATE --------= ");
+					LOGGER.info("oc-viewInMateDues -FOR each INMATE --------=\n"+inMate);
+
+					System.out.println(inMate.getFirstName());
+					//check his joined date and no of bills available
+					Date inMatesJoinedDate = inMate.getDateOfJoining();
+					
+					//calculate how many months he haas stayed in pg
+			
+					int totalMonths = Util.getTotalMonths(inMatesJoinedDate);
+					System.out.println("toatal months = "+totalMonths);
+					
+					//chaeck his bills col
+			
+
+					LOGGER.info("oc-viewInMateDues -b4 inMateBillsSet declare");
+					
+					
+					Set<Long> inMateBillsSet = new LinkedHashSet<Long>(inMate.getMyBills());
+					
+					LOGGER.info("oc-viewInMateDues- after inMateBillsSet declare");
+					int duesMonthCount = 0;
+					//check how many bills he has 
+					//declare one list fro one inmate to hold duesmonths list
+					List<String> oneInMatesDuesYearNMonthsList = null;
+					if(inMateBillsSet.size() != totalMonths)
+					{
+						LOGGER.info("oc-viewInMateDues- inside if(inMateBillsSet.size() != totalMonths)");
+						duesMonthCount = totalMonths - inMateBillsSet.size() ;
+						
+						
+						int thisYear = today.getYear();
+						int thisMonth = today.getMonth();
+						//SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+						//create those many dues
+									
+						 oneInMatesDuesYearNMonthsList = Util.calculateDuesMonthNYear(duesMonthCount);
+						
+					
+					}
+					if(duesMonthCount > 0)
+					{
+						System.out.println("\n yes there are dues since dumnth count > 0\n");
+						LOGGER.info("\noc -viewInMateDues - yes there are dues since dumnth count > 0\n");
+						//calculate his total dues amount
+						//double oneMonthCost = inMate.getMyRoom().getCostPerBed();
+						
+						Room room = searchRoom(inMate.getMyRoom());
+						
+						double oneMonthCost = room.getCostPerBed() ;
+								
+						double totalCost = oneMonthCost * duesMonthCount ;
+						
+						oneInMatesDuesYearNMonthsList.add(totalCost+"");
+						//allInMatesDuesMap.put(i, duesMonthCount+"-"+totalCost);
+						
+						allInMatesDuesMap.put(inMate,oneInMatesDuesYearNMonthsList);
+						
+						System.out.println("i, duesMonthCount+\"-\"+totalCost");
+						LOGGER.info(" oc -viewInMateDues - i, duesMonthCount+\"-\"+totalCost");
+						System.out.println(duesMonthCount+"-"+totalCost);
+					}
+									
+				//}
+				if(allInMatesDuesMap.isEmpty())
+				{
+					
+					String errorMessage = "There are no pending dues ";
+									
+					LOGGER.info("\n viewInMateDues no pending dues so returning to ownerhome with errror msg ");
+					modelAndView.addObject("errorMessage", errorMessage);
+					
+					modelAndView.setViewName("InMateHome");
+						
+					return modelAndView ;
+				}
+				else
+				{
+				
+					LOGGER.info("\n oc- viewInMateDues - thr r  dues so shwoing them ");
+					
+					modelAndView.addObject("allInMatesDuesMap", allInMatesDuesMap);
+					
+					LOGGER.info("\n oc- viewInMateDues thr r  dues - after adding  allInMatesDuesMap t model");
+					
+					modelAndView.addObject("today", new Date());
+					modelAndView.setViewName("InMateDues");
+					
+					return modelAndView ;
+				}
+				
+			} 
+			catch (EmptyPgException e)
+			{
+				e.printStackTrace();
+				System.out.println("\n viewdues () Exception e \n");	
+				LOGGER.info("\n viewInMateDues () Exception e \n"+e.getLocalizedMessage());	
+		
+				String errorMessage = "There are no rooms in your pg at all,..so no inmates , no dues...";
+
+				
+				modelAndView.addObject("errorMessage", errorMessage);
+				
+					modelAndView.setViewName("InMateHome");
+		
+				
+					return modelAndView ;
+			}
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+				LOGGER.info("viewInMateDues -exception - e = "+e.getMessage()+" - trace = \n "+e.getStackTrace().toString());
+							
+				System.out.println("viewDues -exception - e = "+e.getMessage());
+								
+				modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+		// /viewInMateRoom
+		@GetMapping(value = "/viewInMateRoom")
+		public ModelAndView viewInMateRoom(ModelAndView modelAndView,HttpSession session)
+		{
+			try
+			{
+				//load inmate's room
+				InMate inMate = (InMate) session.getAttribute("inMate");
+				
+				LOGGER.info("oc- viewInMateRoom - try \n\n");
+				
+				Room room = searchRoom(inMate.getMyRoom());
+				
+				modelAndView.addObject("room", room);
+				
+				//modelAndView.addObject(attributeName, attributeValue)
+				modelAndView.setViewName("ViewInMateRoom");
+				
+				return modelAndView ;
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				LOGGER.info("oc- viewInMateRoom -exception - e = "+e.getMessage()+" - trace = \n "+e.getStackTrace().toString());
+							
+				System.out.println("oc -viewInMateRoom -exception - e = "+e.getMessage());
+								
+				modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+		
+		//openInMateComplaintBox viewInMateComplaints
+		@GetMapping(value = "/inMateViewMyComplaints")
+		public ModelAndView inMateviewMyComplaints(ModelAndView modelAndView,HttpSession session)
+		{
+			try
+			{
+				
+				InMate inMate = (InMate) session.getAttribute("inMate");
+				
+				LOGGER.info("oc -openInMateComplaintBox -try");
+				
+				System.out.println("oc openComplaintBox(Model m)");
+				
+				//local api to load all complaints of inmate  from db
+			
+				List<Complaint> complaintsList = loadMyAllComplaints(session);
+				
+//				String loadComplaintsURL = COMPLAINT_SERVICE_URI+"findAll/inMateId/{inMateId}"
+//				
+//				Complaint[] complaintsArray = restTemplate.getForObject(loadComplaintsURL,
+//						Complaint[].class, 
+//						inMate.getInMateId())
+//				
+//				
+//				List<Complaint> complaintsList = Arrays.asList(complaintsArray)
+				
+				//if no complaints 
+//				if(complaintsList == null || complaintsList.isEmpty() )
+//				{
+//					
+//						System.out.println("\nPGHC opencomlBOx -> comlist size = 0");
+//						LOGGER.info("oc -openInMateComplaintBox -comlist size = 0");
+//						String errorMessage = "U haven't raised any complaints yet ";
+//												
+//						modelAndView.addObject("errorMessage", errorMessage);
+//						
+//						modelAndView.setViewName("InMateHome");
+//						
+//						return modelAndView ;
+//				}
+				//	else
+					//{
+						System.out.println("\nPGHC opencomlBOx -> comlist size > 0");
+						LOGGER.info("oc -openInMateComplaintBox - 0 i.e .size() = \n"+complaintsList.size());
+						LOGGER.info("\n\n oc -openInMateComplaintBox -comlist = "+complaintsList);
+						
+						
+						modelAndView.addObject("complaintsList", complaintsList);
+						
+						//modelAndView.setViewName("ViewInMateComplaints");
+						
+						modelAndView.setViewName("InMateViewMyComplaints");
+						
+						//modelAndView.setViewName("ViewInMateAllComplaints");
+						//LOGGER.info("oc -openInMateComplaintBox -complaintSLNumber= \n "+complaintSLNumber);
+						
+						return modelAndView ;
+					//}
+					
+			}
+			catch (ZeroComplaintsException e) 
+			{
+				LOGGER.info("oc -inmatevomycppmliants -ZeroComplaintsException = "+e.getLocalizedMessage());
+				
+				LOGGER.info("oc -inmatevomycppmliants -U haven't raised any complaints yet "
+						+ "so rturing to InMateHome");
+				
+				String errorMessage = "U haven't raised any complaints yet ";
+										
+				modelAndView.addObject("errorMessage", errorMessage);
+				
+				modelAndView.setViewName("InMateHome");
+				
+				return modelAndView ;
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				LOGGER.info("oc -openInMateComplaintBox -Exception e = \n "+e.getLocalizedMessage());
+				
+		        modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+		// /raiseAComplaint
+		@GetMapping(value = "openRaiseAComplaintView")
+		public ModelAndView openRaiseAComplaintView(ModelAndView modelAndView)
+		{
+			try
+			{
+				 LOGGER.info("oc -openraiseAComplaint- try");
+				 
+				 modelAndView.setViewName("RaiseAComplaint");
+				 
+				 Complaint complaint = new Complaint();
+				
+				 LOGGER.info("oc -openraiseAComplaint- added empty compaint to satisfy view , complant = \n "+complaint);
+				
+				 modelAndView.addObject("complaint", complaint);
+				 
+				 return modelAndView ;
+				 
+			} 
+			catch (Exception e)
+			{
+				e.printStackTrace();
+                
+				LOGGER.info("oc -openraiseAComplaint -Exception e = \n "+e.getLocalizedMessage());
+				
+		        modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+		// raiseAComplaint
+		@PostMapping(value ="/raiseAComplaint" )
+		public ModelAndView raiseAComplaint(@Valid Complaint complaint,ModelAndView modelAndView,
+				BindingResult result)
+		{
+			if(result.hasErrors())
+			{
+				LOGGER.info("oc -raiseAComplaint- result.failed with complaint =\n "+complaint);
+				
+				 modelAndView.addObject("complaint",complaint);
+						 
+				 modelAndView.setViewName("RaiseAComplaint");
+				
+				 return modelAndView ;
+			}
+			else
+			{
+				LOGGER.info("oc -raiseAComplaint- result passed with complaint =\n "+complaint);
+				try
+				{
+					 LOGGER.info("oc -raiseAComplaint- try");
+					 
+					 //set all has a
+					 complaint.setDate(new Date());
+					 
+					 LOGGER.info("oc -raiseAComplaint- b4 posting to micro Complaint = \n "+complaint);
+					 
+					 Complaint createdComplaint = restTemplate.postForObject(COMPLAINT_SERVICE_URI+"create",
+							 complaint,
+							 Complaint.class);
+					 
+					 LOGGER.info("oc -raiseAComplaint- after posting to micro createdComplaint = \n "+createdComplaint);
+					 
+					 if(createdComplaint != null && createdComplaint instanceof Complaint)
+					 {
+						 LOGGER.info("oc -raiseAComplaint- succesfull  = \n "+createdComplaint);
+						 
+						 modelAndView.addObject("successMessage", "ur complaint has been raised successfully pls verify");
+						 
+						 modelAndView.setViewName("InMateHome");
+							
+						 return modelAndView ;
+					 }
+					 else
+					 {
+						 throw new CanNotRaiseAComplaintException();
+					 }
+				}
+				catch (CanNotRaiseAComplaintException e)
+				{
+                    e.printStackTrace();
+	                
+					LOGGER.info("oc -CanNotRaiseAComplaintException -Exception e = \n "+e.getLocalizedMessage());
+					String errorMessage = "Sorry due to some reasons we colud not add ur complaint to Pg's complaint box"
+							+ "try again after sometime ";
+					  modelAndView.addObject("errorMessage", errorMessage);
+						
+						modelAndView.setViewName("InMateHome");
+							
+						return modelAndView ;
+				}
+				catch (Exception e)
+				{
+	                e.printStackTrace();
+	                
+					LOGGER.info("oc -raiseAComplaint -Exception e = \n "+e.getLocalizedMessage());
+					
+			        modelAndView.addObject("errorMessage", e.getMessage());
+					
+					modelAndView.setViewName("Error");
+						
+					return modelAndView ;
+				}
+			}
+		
+		}
+		
+	
+		//openRespondToComplaintView
+		@PostMapping(value = "/openRespondToComplaintView")
+		public ModelAndView openRespondToComplaintView(ModelAndView modelAndView,
+				@RequestParam long complaintId, HttpSession session)
+		{
+			try 
+			{
+				LOGGER.info("\n oc -openRespondToComplaintView recvd in oc -openRespondToComplaintView complaintId = \n "+complaintId);
+				
+				modelAndView.addObject("errorMessage", " recvd in oc -openRespondToComplaintView complaintId = \n "+complaintId);
+				
+				//String ownerResponse
+				
+				boolean isOwnerLikeToRespond = true;
+				
+				LOGGER.info("\n oc -openRespondToComplaintView  isOwnerLikeToRespond = \n "+isOwnerLikeToRespond);
+				
+				modelAndView.addObject("isOwnerLikeToRespond", isOwnerLikeToRespond) ;
+				
+				//add back complaintId to view so that they can fowrd to control to submit response
+				
+				modelAndView.addObject("complaintId", complaintId);
+				
+				//load everything what viewAllComplaints url loads actually
+				
+				
+				
+				
+				//Pg pg = (Pg)session.getAttribute("pg");
+				
+				LOGGER.info("oc -openRespondToComplaintView load all complaints cal local api\n");
+				
+			
+								
+				//List<Complaint> pgAllComplaintsList = loadAllComplaintsOfPg(session)
+				
+				//Map<Complaint, InMate> complaintedInMatesMap = loadComplaintedInMates(pgAllComplaintsList)
+				
+				
+				//call local api to make up to returnto viewallcomplaints
+				Map<Complaint, InMate> complaintedInMatesMap = makeUpReturnToViewAllComplaints(session);
+											
+				
+							 
+				modelAndView.addObject("complaintedInMatesMap", complaintedInMatesMap);
+				
+				modelAndView.setViewName("OwnerViewPgAllComplaints");
+				
+				return modelAndView ;
+			} 
+			catch (Exception e) 
+			{
+				   e.printStackTrace();
+	                
+					LOGGER.info("oc -openRespondToComplaintView -Exception e = \n "+e.getLocalizedMessage());
+					
+			        modelAndView.addObject("errorMessage", e.getMessage());
+					
+					modelAndView.setViewName("Error");
+						
+					return modelAndView ;
+			}
+		}
+		
+		// respondToComplaint
+		@PostMapping(value = "/respondToComplaint")
+		public ModelAndView respondToComplaint(@RequestParam long complaintId, ModelAndView modelAndView,
+				@RequestParam String responseMessage,HttpSession session)
+		{
+			try 
+			{
+				Pg pg = (Pg) session.getAttribute("pg");
+				
+				LOGGER.info("\n  oc -respondToComplaint complaintId = \n "+complaintId);
+				
+				LOGGER.info("\n  &  responseMessage = \n "+responseMessage);
+				
+				//load cmplaint & set responseMessage & setResponded & update
+				Complaint complaint = searchComplaint(complaintId);
+				
+				complaint.setOwnersResponse(responseMessage);
+				
+				complaint.setResponded(true);
+				
+				//update complaint via micro complaint 
+				
+//				restTemplate.put(COMPLAINT_SERVICE_URI+"update",
+//						complaint)
+				
+				//call local api
+				updateComplaint(complaint);
+				
+				LOGGER.info("\n  oc -respondToComplaint complaintId");
+				
+				modelAndView.addObject("successMessage", "Ur response is sent to respective InMate,pls verify");
+					
+//				modelAndView.setViewName("OwnerHome");
+					
+				
+				//load all complaints from db
+				
+				//List<Complaint> pgAllComplaintsList = loadAllComplaintsOfPg(session);	
+											
+				//Map<Complaint, InMate> complaintedInMatesMap = loadComplaintedInMates(pgAllComplaintsList);
+				
+				//loaclapi call
+				Map<Complaint, InMate> complaintedInMatesMap = makeUpReturnToViewAllComplaints(session);
+				
+				modelAndView.addObject("complaintedInMatesMap", complaintedInMatesMap);
+				
+				modelAndView.setViewName("OwnerViewPgAllComplaints");
+				
+				
+				return modelAndView ;
+			} 
+			catch (Exception e)
+			{
+				e.printStackTrace();
+                
+				LOGGER.info("oc -respondToComplaint -Exception e = \n "+e.getLocalizedMessage());
+				
+		        modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+				
+			}
+		}
+
+		//setComplaintResolved
+		//@PostMapping(value = "/setComplaintResolved")
+		@PostMapping(value = "/toggleComplaintState")
+		public ModelAndView toggleComplaintState(ModelAndView modelAndView,@RequestParam long complaintId,
+				HttpSession session)
+		{
+			try
+			{
+				LOGGER.info("\n oc -toggleComplaintState complaintId - "+complaintId);
+				
+				Complaint complaint = searchComplaint(complaintId);
+				
+				//set it resolved
+				if(complaint.isResolved())
+				{
+					LOGGER.info("\n oc -toggleComplaintState -state=\n"+complaint.isResolved());
+					complaint.setResolved(false);
+				}
+				else
+				{
+					LOGGER.info("\n oc -toggleComplaintState -state=\n"+complaint.isResolved());
+					complaint.setResolved(true);
+				}
+				
+				LOGGER.info("\n oc -toggleComplaintState -state set to =\n"+complaint.isResolved());
+				
+				LOGGER.info("\n oc -toggleComplaintState updating complaint =- "+complaint);
+				
+				updateComplaint(complaint);
+			
+				LOGGER.info("\n oc -toggleComplaintState updated complaint");
+				
+                
+				modelAndView.addObject("successMessage", Constants.COMPLAINT_STATUS_TOGGLED_MESSAGE);
+				
+                //load all complaints from db
+				
+				//List<Complaint> pgAllComplaintsList = loadAllComplaintsOfPg(session);	
+											
+				//Map<Complaint, InMate> complaintedInMatesMap = loadComplaintedInMates(pgAllComplaintsList);
+				
+				
+				//call local api
+				
+				Map<Complaint, InMate> complaintedInMatesMap = makeUpReturnToViewAllComplaints(session);
+				
+				modelAndView.addObject("complaintedInMatesMap", complaintedInMatesMap);
+				
+				
+				modelAndView.setViewName("InMateViewPgAllComplaints");
+					
+				LOGGER.info("\n oc -toggleComplaintState moving to InMateViewPgAllComplaints");
+				return modelAndView ;
+				
+			} 
+			catch (Exception e)
+			{
+                e.printStackTrace();
+                
+				LOGGER.info("oc -toggleComplaintState -Exception e = \n "+e.getLocalizedMessage());
+				
+		        modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+		//try to identify is it posible to discover for controll that from whoch view it recvd request
+		//toggleComplaintState2
+		
+		@PostMapping(value = "/toggleComplaintState2")
+		public ModelAndView toggleComplaintState2(ModelAndView modelAndView,@RequestParam long complaintId,
+				HttpSession session)
+		{
+			try
+			{
+				LOGGER.info("\n oc -toggleComplaintState2 complaintId - "+complaintId);
+				
+				Complaint complaint = searchComplaint(complaintId);
+				
+				//set it resolved
+				if(complaint.isResolved())
+				{
+					LOGGER.info("\n oc -toggleComplaintState2 -state=\n"+complaint.isResolved());
+					complaint.setResolved(false);
+				}
+				else
+				{
+					LOGGER.info("\n oc -toggleComplaintState2 -state=\n"+complaint.isResolved());
+					complaint.setResolved(true);
+				}
+				
+				LOGGER.info("\n oc -toggleComplaintState2 -state set to =\n"+complaint.isResolved());
+				
+				LOGGER.info("\n oc -toggleComplaintState2 updating complaint =- "+complaint);
+				
+				updateComplaint(complaint);
+			
+				LOGGER.info("\n oc -toggleComplaintStat2e updated complaint  \n ");
+				
+                
+				modelAndView.addObject("successMessage", Constants.COMPLAINT_STATUS_TOGGLED_MESSAGE);
+				
+                //load all complaints from db
+							
+				
+				//call local api
+							
+				List<Complaint> complaintsList = loadMyAllComplaints(session);
+				
+				modelAndView.addObject("complaintsList", complaintsList);
+				
+				modelAndView.setViewName("InMateViewMyComplaints");
+					
+				LOGGER.info("\n oc -toggleComplaintState2 moving to InMateViewPgAllComplaints");
+				return modelAndView ;
+				
+			} 
+			catch (Exception e)
+			{
+                e.printStackTrace();
+                
+				LOGGER.info("oc -toggleComplaintState2 -Exception e = \n "+e.getLocalizedMessage());
+				
+		        modelAndView.addObject("errorMessage", e.getMessage());
+				
+				modelAndView.setViewName("Error");
+					
+				return modelAndView ;
+			}
+		}
+		
+		//closeComplaint
+		//showCloseComplaintWindow
+		//post pr get ? since complaintId is passed
+		@GetMapping(value = "/showCloseComplaintWindow")
+		public ModelAndView showCloseComplaintWindow(ModelAndView modelAndView,@RequestParam long complaintId,
+				HttpSession session)
+		{
+			try
+			{
+				LOGGER.info("oc -showCloseComplaintWindow -try");
+				
+				
+				
+				
+				//reset complaints view of inmate to help inmate to delete
+	            List<Complaint> complaintsList = loadMyAllComplaints(session);
+				
+				
+				modelAndView.addObject("complaintsList", complaintsList);
+				
+				//set isInMateLikeToDeleteComplaint true to help inmat to delete
+				modelAndView.addObject("isInMateLikeToDeleteComplaint", true);
+				
+				//return back complaintid to help inmate to delete
+				modelAndView.addObject("complaintId", complaintId);
+				LOGGER.info("\n oc -showCloseComplaintWindow reset complaints view of inmate"
+						+ " done to help inmate to delete\n");
+				
+				
+				modelAndView.setViewName("InMateViewMyComplaints");
+						
+				return modelAndView ;
+				
+			}
+			catch (Exception e) 
+			{
+		        e.printStackTrace();
+	                
+				LOGGER.info("oc  -showCloseComplaintWindow -Exception e = \n "+e.getLocalizedMessage());
+					
+			     modelAndView.addObject("errorMessage", e.getMessage());
+					
+				modelAndView.setViewName("Error");
+						
+				return modelAndView ;
+			}
+		}
+		
+		//closeComplaint
+		@PostMapping(value = "/closeComplaint")
+		public ModelAndView closeComplaint(ModelAndView modelAndView,@RequestParam long complaintId, 
+				HttpSession session)
+		{
+			try
+			{
+				LOGGER.info("oc -closeComplaint -try");
+				
+				//delete complaint
+			
+				deleteComplaint(complaintId);
+				
+				List<Complaint> complaintsList = loadMyAllComplaints(session);
+				
+				//reset complaints view of inmate
+				modelAndView.addObject("complaintsList", complaintsList);
+				
+				//add success messgae
+				modelAndView.addObject("successMessage", Constants.COMPLAINT_DELETED_SUCCESS_MESSAGE);
+				
+				modelAndView.setViewName("InMateViewMyComplaints");
+				
+				LOGGER.info("\n reset complaints view of inmate moving to InMateViewMyComplaints\n");
+				return modelAndView ;
+				
+			}
+			catch (ZeroComplaintsException e) 
+			{
+				String errorMessage = "There are no more complaints available in your complaint BOX";
+				
+				modelAndView.addObject("errorMessage", errorMessage);
+				
+				modelAndView.setViewName("InMateHome");
+				
+				return modelAndView;
+				
+			}
+			catch (Exception e) 
+			{
+			      e.printStackTrace();
+	                
+					//LOGGER.info("oc -closeComplaint -Exception e = \n "+e.getLocalizedMessage());
+					
+					LOGGER.error("\noc -closeComplaint -Exception = \n ", e);
+				    
+					modelAndView.addObject("errorMessage", e.getMessage());
+						
+					modelAndView.setViewName("Error");
+							
+					return modelAndView ;
+			}
+		}
+		//showCloseComplaintWindow2
+		@PostMapping(value = "/showCloseComplaintWindow2")
+		public ModelAndView showCloseComplaintWindow2(ModelAndView modelAndView,@RequestParam long complaintId,
+				HttpSession session)
+		{
+			try
+			{
+				LOGGER.info("oc -showCloseComplaintWindow2 -try");
+				
+				
+				
+				
+				//reset complaints view of inmate to help inmate to delete
+	         				
+				Map<Complaint, InMate> complaintedInMatesMap = makeUpReturnToViewAllComplaints(session);
+				
+				modelAndView.addObject("complaintedInMatesMap", complaintedInMatesMap);
+				
+				
+				//set isInMateLikeToDeleteComplaint true to help inmat to delete
+				modelAndView.addObject("isInMateLikeToDeleteComplaint", true);
+				
+				//return back complaintid to help inmate to delete
+				modelAndView.addObject("complaintId", complaintId);
+				LOGGER.info("\n oc -showCloseComplaintWindow2 reset complaints view of inmate"
+						+ " done to help inmate to delete\n");
+				
+				
+				modelAndView.setViewName("InMateViewPgAllComplaints");
+						
+				return modelAndView ;
+				
+			}
+			catch (Exception e) 
+			{
+		        e.printStackTrace();
+	                
+				//LOGGER.info("oc  -showCloseComplaintWindow2 -Exception e = \n "+e.getLocalizedMessage());
+				
+		        LOGGER.error("oc  -showCloseComplaintWindow2 -Exception e = \n ", e);
+			     modelAndView.addObject("errorMessage", e.getMessage());
+					
+				modelAndView.setViewName("Error");
+						
+				return modelAndView ;
+			}
+		}
+		
+		         //closeComplaint
+				@PostMapping(value = "/closeComplaint2")
+				public ModelAndView closeComplaint2(ModelAndView modelAndView,@RequestParam long complaintId, 
+						HttpSession session)
+				{
+					try
+					{
+						LOGGER.info("oc -closeComplaint -try");
+						
+						//delete complaint
+					
+						deleteComplaint(complaintId);
+						
+						
+						//reset complaints view of inmate
+						Map<Complaint, InMate> complaintedInMatesMap = makeUpReturnToViewAllComplaints(session);
+						
+						modelAndView.addObject("complaintedInMatesMap", complaintedInMatesMap);
+						//add success messgae
+						modelAndView.addObject("successMessage", Constants.COMPLAINT_DELETED_SUCCESS_MESSAGE);
+						
+						modelAndView.setViewName("InMateViewPgAllComplaints");
+						
+						LOGGER.info("\n reset complaints view of inmate moving to InMateViewMyComplaints\n");
+						return modelAndView ;
+						
+					}
+					catch (ZeroComplaintsException e) 
+					{
+						String errorMessage = "There are no more complaints available in your Pg";
+						
+						modelAndView.addObject("errorMessage", errorMessage);
+						
+						modelAndView.setViewName("InMateHome");
+						
+						return modelAndView;
+						
+					}
+					catch (Exception e) 
+					{
+					      e.printStackTrace();
+			                
+							//LOGGER.info("oc -closeComplaint -Exception e = \n "+e.getLocalizedMessage());
+							
+							LOGGER.error("\noc -closeComplaint -Exception = \n ", e);
+						    
+							modelAndView.addObject("errorMessage", e.getMessage());
+								
+							modelAndView.setViewName("Error");
+									
+							return modelAndView ;
+					}
+				}
 }//end of main
 

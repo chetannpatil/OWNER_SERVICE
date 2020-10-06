@@ -16,20 +16,18 @@
 
 
 <body>
-<div th:replace="OwnerHeader :: oh"></div>
+<div th:replace="InMateHeader :: ih"></div>
 
 
 
-<h3 th:if = "${rooms.size() <= 0}" th:text="${emptyPgMessage }"></h3>
+<!-- <h3 th:if = "${rooms.size() <= 0}" th:text="${emptyPgMessage }"></h3> -->
 
 
 
-<table th:if = "${rooms.size() > 0 }" align="center" border="1" bordercolor="maroon">
+<table th:if = "${room ne null }" align="center" border="1" bordercolor="maroon">
 
 <tr style="color: maroon;">
-<th >
-Sl Number
-</th>
+
 
 <th >
 Room Number
@@ -52,18 +50,15 @@ cost per bed
 Total vacancies
 </th>
 
+<th >
+I JOINED ON
+</th>
+
 </tr>
 
-<tr th:each="room: ${rooms}">
+<tr >
 
-<td style="color: red;">
-<!-- //<c:set var="roomCount" value="${roomCount + 1}" scope="page"/> -->
-
-<!-- <label th:text="${roomCount + 1}" var="roomCount" th:value="${roomCount + 1}"></label> -->
-
-</td>
-
-    
+   
 
 <td style="color: red;">
 <b th:text="${room.roomNumber }"></b>
@@ -79,6 +74,7 @@ Total vacancies
 
 <td style="color: red;">
 <b th:text="${room.costPerBed }"></b>
+<!-- Contact ur Owner -->
 </td>
 
 
@@ -104,26 +100,9 @@ Total vacancies
 <!-- <label>Calculate by urself</label> -->
 </td>
 
-<td>
-<!-- //<form action="openEditRoomView.owner" method="post"> -->
- <form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/openEditRoomView}"  method="GET">
 
-<input type="hidden" name="roomId" th:value="${room.roomId }"/>
+<td th:text="${session.inMate.dateOfJoining} "/>
 
-<input type="submit" th:value="Edit_Room"/>
-
-
-</form>
-</td>
-
-<td>
- <form th:if = "${session.owner != null}" action="#" th:action="@{/mypg/deleteRoom}"  method="GET">
-
-<input type="hidden" name="roomId" th:value="${room.roomId }"/>
-
-<input type="submit" th:value="Remove_Room_from_Pg" />
-</form>
-</td>
 
 </tr>
 

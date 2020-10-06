@@ -1,0 +1,19 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>InMateHome</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+<body>
+<div th:replace="InMateHeader :: ih"></div>
+InMateHome -
+
+  <h1>Hi</h1><h1 th:text="${session.inMate.firstName }"></h1>
+   <h2>Welcome</h2>
+<!--     <h1 th:text="Welcome"> </h1> -->
+</body>
+</html>

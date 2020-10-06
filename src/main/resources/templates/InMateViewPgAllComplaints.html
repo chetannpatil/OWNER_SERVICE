@@ -1,0 +1,204 @@
+   <html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+<meta charset="UTF-8">
+<title>InMateViewPgAllComplaints</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+   
+
+<body>
+
+<div th:replace="InMateHeader :: ih"></div>
+InMateViewPgAllComplaints
+ 
+ <div  th:if = "${complaintedInMatesMap != null &&  complaintedInMatesMap.isEmpty() == false}">
+ 
+<h3 style="color: maroon;" align="center" >Followings are complaints till today </h3>
+
+<table border='1' bordercolor="green" style="width:80%" align="center">
+
+<thead>
+
+<tr>
+
+<th >
+who raised
+</th>
+
+<th >
+description
+</th>
+
+<th >
+Raised Date
+</th>
+
+<th >
+ Resolved ?
+</th>
+
+<th >
+Responded at least ?
+</th>
+
+<th >
+OWner's
+Response
+</th>
+
+</tr>
+
+</thead>
+
+
+<div th:each="entryBean: ${complaintedInMatesMap.entrySet()}">
+    
+   
+<tr>
+
+<td>
+<div  th:if = "${entryBean.getKey().inMate == session.inMate.inMateId }">
+<label>YOU</label>
+</div>
+
+<div  th:if = "${entryBean.getKey().inMate !=session.inMate.inMateId }">
+
+<label th:text="${entryBean.getValue().firstName}"></label>
+
+<label th:text="${entryBean.getValue().lastName}"></label>
+</div>
+
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().description}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().date}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().isResolved()}"></label>
+
+
+<div  th:if = "${entryBean.getKey().inMate == session.inMate.inMateId }">
+
+<!-- OPTION TO INMATE TO SET IT RESOLVE -->
+
+<div  th:if = "${entryBean.getKey().isResolved() == false }">
+<!-- <form action="#" th:action="@{/mypg/setComplaintResolved}" method="POST"> -->
+
+<form action="#" th:action="@{/mypg/toggleComplaintState}" method="POST">
+
+<input type="hidden" name="complaintId" th:value="${entryBean.getKey().complaintId }"/>
+
+<input type="submit" th:value="make_it_RESolved">
+
+</form>
+</div>
+
+
+<!-- unresloved -->
+<div  th:if = "${entryBean.getKey().isResolved() }">
+<!-- <form action="#" th:action="@{/mypg/setComplaintUnResolved}" method="POST"> -->
+
+<form action="#" th:action="@{/mypg/toggleComplaintState}" method="POST">
+<input type="hidden" name="complaintId" th:value="${entryBean.getKey().complaintId }"/>
+
+<input type="submit" th:value="let_it_b_unRESolved">
+
+</form>
+</div>
+
+</div>
+
+
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().isResponded()}"></label>
+</td>
+
+<td>
+<label th:text="${entryBean.getKey().ownersResponse}"></label>
+</td>
+
+
+<div  th:if = "${entryBean.getKey().inMate == session.inMate.inMateId }">
+
+<td>
+
+<!-- close complaint -->
+
+<form action="#" th:action="@{/mypg/showCloseComplaintWindow2}" method="POST">
+<input type="hidden" name="complaintId" th:value="${entryBean.getKey().complaintId }"/>
+
+<input type="submit" th:value="close_complaint">
+
+</form>
+
+</td>
+</div>
+
+ </tr>
+
+
+
+  </div>
+ <!-- foreach entrybean div ends -->
+
+ </table>
+
+
+</div>
+ <!-- foreach complaintedInMatesMap div ends -->
+ 
+<!--  start delete div -->
+ <div  th:if = "${isInMateLikeToDeleteComplaint != null && isInMateLikeToDeleteComplaint == true }">
+
+<table align="center" border="1" style="border-style:dashed; ;">
+
+<tr >
+<td colspan="2">
+<!-- <h2 th:text="Are u sure u really want to close this complaint? For ur kind information if u say yes we ll delete complaint" ></h2> -->
+
+<pre >
+<h2 align="center">"Are u sure u really want to close this complaint? 
+if yes we will delete complaint permanently" </h2>
+</pre>
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+<form action="#" th:action="@{/mypg/closeComplaint2}" method="POST">
+<input type="hidden" name="complaintId" th:value="${complaintId }"/>
+
+
+<input type="submit" th:value="YES">
+</form>
+
+</td>
+
+<!--  cancel option in second column-->
+<td>
+<form action="#" th:action="@{/mypg/viewAllComplaints}" method="GET">
+
+<input type="submit" th:value="NO">
+
+</form>
+</td>
+
+</tr>
+
+</table>
+
+
+</div>
+<!-- delete division ends -->
+</body>
+</html>

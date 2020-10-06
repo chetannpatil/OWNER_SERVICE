@@ -1,4 +1,4 @@
-package io.chetan.owner.model;
+package io.chetan.owner.util;
 
 import java.util.Date;
 
@@ -8,6 +8,8 @@ import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.format.annotation.DateTimeFormat;
+
+import io.chetan.owner.model.Address;
 
 public abstract class User
 {

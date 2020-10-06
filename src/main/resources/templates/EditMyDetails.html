@@ -1,0 +1,252 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Edit inMate</title>
+ <link rel="stylesheet" type="text/css" href="/css/OwnerHeader.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+<div th:replace="InMateHeader :: ih"></div>
+
+
+<h3 align="center" >Edit the ur details and submit</h3>
+
+
+
+<!-- <h4 align="center" th:text="${errorMessage }"></h4> -->
+
+
+<!-- <div th:if = "${inMate != null}"> -->
+
+
+
+ <form th:if = "${session.inMate != null}" action="#" th:action="@{/mypg/updateInMate}"  th:object="${inMate}" method="POST">
+
+
+   <input type="hidden"  th:field="*{inMateId}"/>
+ 
+ <input type="hidden"  th:field="*{password}"/>
+
+ <input type="hidden" th:field="*{myPg}"/>
+ 
+ <input type="hidden" th:field="*{myRoom}"/>
+ 
+<!--  <input type="hidden" name="roomId" th:value="${room.roomId }"/> -->
+
+<input type="hidden" name="roomNumber" th:value="${roomNumber}"/>
+
+<!-- <input type="hidden" name="roomNumber" th:value='${roomNumber}'/> -->
+<!-- no need to set since we r retrving from session directly <input type="text" th:name="roomNumber" th:value="${roomNumber}"/> -->
+<table align="center" border="0" bordercolor="maroon">
+
+<tr>
+
+<td>
+Room Number
+</td>
+
+<td>
+<!-- <label name='${roomNumber}'></label> -->
+<!-- <label th:text="${roomNumber}" th:name="roomNumber"></label> -->
+
+<label th:text="${roomNumber}" ></label>
+
+<!-- <label th:text="${session.roomNumber}" ></label>  -->
+</td>
+
+</tr>
+
+<tr>
+<td>
+FIRST NAME is
+</td>
+
+<td>
+<input type="text" th:field="*{firstName}"/>     
+<label th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"> </label>   
+ 
+</td>
+</tr>
+
+
+<tr >
+<td>
+LAST NAME
+</td>
+<td >
+
+<input type="text" th:field="*{lastName}"/>
+<label th:if="${#fields.hasErrors('lastName')}"  th:errors="*{lastName}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+PHONE NUMBER
+</td>
+<td>
+
+<input type="text" readonly="true" th:field="*{phoneNumber}" />       
+
+<!-- <input type="text" th:field="*{phoneNumber}" />    -->
+<!-- <label th:if="${#fields.hasErrors('phoneNumber')}"   th:errors="*{phoneNumber}"> </label> -->
+</td>
+
+<td><b style="color: red;" th:text="${dupUserErrorMessage }"></b></td>
+
+</tr>
+
+<tr>
+<td>
+AADHAAR NUMBER
+</td>
+<td>
+
+<input type="text" th:field="*{aadhaarNumber}"/>
+<label th:if="${#fields.hasErrors('aadhaarNumber')}"  th:errors="*{aadhaarNumber}"> </label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+D.O.B  
+</td>
+
+<td>
+
+<input type="text" th:field="*{dob}"/>
+<label th:if="${#fields.hasErrors('dob')}"  th:errors="*{dob}"> </label>
+</td>
+
+<td><b style="color: red;" th:text="${dobErrorMessage }"></b></td>
+</tr>
+
+
+<tr >
+<td>
+occupation
+</td>
+<td >
+
+<input type="text" th:field="*{occupation}"/>
+<label th:if="${#fields.hasErrors('occupation')}"  th:errors="*{occupation}"> </label>
+</td>
+</tr>
+
+<tr >
+<td>
+emailId
+</td>
+<td >
+
+<input type="text" th:field="*{emailId}"/>
+<label th:if="${#fields.hasErrors('emailId')}"  th:errors="*{emailId}"> </label>
+</td>
+</tr>
+
+
+<tr >
+<td>
+dateOfJoining
+</td>
+<td >
+
+<input type="text" th:field="*{dateOfJoining}"/>
+<label th:if="${#fields.hasErrors('dateOfJoining')}"  th:errors="*{dateOfJoining}"> </label>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center" >ADDRESS  
+</td>
+</tr>
+
+<tr>
+<td>
+HOUSE-NUMBER  
+</td>
+<td>
+
+<input type="text" th:field="*{address.houseNumber}"/>
+<label th:if="${#fields.hasErrors('address.houseNumber')}"  th:errors="*{address.houseNumber}" > </label>
+
+</td>
+</tr>
+
+<tr>
+<td>
+STREET  
+</td>
+<td>
+
+
+<input type="text" th:field="*{address.street}"/>
+<label th:if="${#fields.hasErrors('address.street')}"  th:errors="*{address.street}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+DISTRICT
+</td>
+<td>
+
+
+<input type="text" th:field="*{address.disrtict}"/>
+<label th:if="${#fields.hasErrors('address.disrtict')}"  th:errors="*{address.disrtict}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+STATE  
+</td>
+<td>
+
+
+<input type="text" th:field="*{address.state}"/>
+<label th:if="${#fields.hasErrors('address.state')}"  th:errors="*{address.state}"> </label>
+</td>
+</tr>
+
+<tr>
+<td>
+COUNTRY 
+</td>
+<td>
+
+
+<input type="text" th:field="*{address.country}"/>
+<label th:if="${#fields.hasErrors('address.country')}"  th:errors="*{address.country}"> </label>
+
+</td>
+
+<tr>
+<td>
+PIN
+</td>
+<td>
+
+
+<input type="text" th:field="*{address.pin}"/>
+<label th:if="${#fields.hasErrors('address.pin')}"  th:errors="*{address.pin}"> </label>
+</td>
+</tr>
+
+
+<tr>
+<td colspan="2" align="center">
+<input type="submit" th:value="Update_InMate_Details"/>
+<input type="reset" th:value="reset"/>
+</td>
+</tr>
+
+
+</table>
+
+</form>
+
+<!-- </div> -->
+</body>
+</html>

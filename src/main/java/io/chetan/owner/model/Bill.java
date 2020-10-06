@@ -7,11 +7,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.Min;
 
-@Entity
+//@Entity
 public class Bill implements Comparable<Bill> {
 
-	@Id
-	@GeneratedValue
+	//@Id
+	//@GeneratedValue
 	private long billId;
 
 	// @NotNull
