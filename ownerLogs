@@ -1,0 +1,31 @@
+2020-11-09 14:15:46.011 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.web.servlet.DispatcherServlet        : POST "/mypg/logIn", parameters={masked}
+2020-11-09 14:15:46.012 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to io.chetan.controller.OwnerController#logIn(String, String, ModelAndView, HttpSession)
+2020-11-09 14:15:46.014 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] org.hibernate.SQL                        : select owner0_.owner_id as owner_id1_0_, owner0_.aadhaar_number as aadhaar_2_0_, owner0_.addres_id as addres_i3_0_, owner0_.country as country4_0_, owner0_.disrtict as disrtict5_0_, owner0_.house_number as house_nu6_0_, owner0_.pin as pin7_0_, owner0_.state as state8_0_, owner0_.street as street9_0_, owner0_.dob as dob10_0_, owner0_.email_id as email_i11_0_, owner0_.first_name as first_n12_0_, owner0_.last_name as last_na13_0_, owner0_.my_pg as my_pg14_0_, owner0_.password as passwor15_0_, owner0_.phone as phone16_0_, owner0_.repeat_password as repeat_17_0_ from owner owner0_ where owner0_.phone=? and owner0_.password=?
+2020-11-09 14:15:46.017  INFO [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] io.chetan.controller.OwnerController     : 
+OC -loadMyPg - wit pgid = 
+2
+2020-11-09 14:15:46.018  INFO [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] io.chetan.controller.OwnerController     : 
+ OC - loadMyPg - serviceInstance  = 
+RibbonServer{serviceId='PgService', server=CHPAPATI-IN.in.oracle.com:2005, secure=false, metadata={management.port=2005}}
+2020-11-09 14:15:46.018  INFO [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] io.chetan.controller.OwnerController     : 
+ OC - loadMyPg - serviceInstance.getUri  = 
+http://CHPAPATI-IN.in.oracle.com:2005
+
+
+2020-11-09 14:15:46.018 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.web.client.RestTemplate              : HTTP GET http://PgService/pg/findPgById/2
+2020-11-09 14:15:46.018 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2020-11-09 14:15:46.042 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.web.client.RestTemplate              : Response 200 OK
+2020-11-09 14:15:46.043 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.web.client.RestTemplate              : Reading to [io.chetan.owner.model.Pg]
+2020-11-09 14:15:46.045 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.w.s.v.ContentNegotiatingViewResolver : Selected 'text/html' given [text/html, application/xhtml+xml, image/avif, image/webp, image/apng, application/xml;q=0.9, application/signed-exchange;v=b3;q=0.9, */*;q=0.8]
+2020-11-09 14:15:46.051 DEBUG [OwnerService,a3714d880e1a9a63,a3714d880e1a9a63,true] 10016 --- [http-nio-2004-exec-5] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2020-11-09 14:15:46.074 DEBUG [OwnerService,b6a69dc52ac87536,b6a69dc52ac87536,false] 10016 --- [http-nio-2004-exec-2] o.s.web.servlet.DispatcherServlet        : GET "/css/OwnerHeader.css", parameters={}
+2020-11-09 14:15:46.074 DEBUG [OwnerService,b6a69dc52ac87536,b6a69dc52ac87536,false] 10016 --- [http-nio-2004-exec-2] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler ["classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/", "/"]
+2020-11-09 14:15:46.083 DEBUG [OwnerService,b6a69dc52ac87536,b6a69dc52ac87536,false] 10016 --- [http-nio-2004-exec-2] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2020-11-09 14:15:46.881 DEBUG [OwnerService,,,] 10016 --- [AsyncReporter{RestTemplateSender{http://localhost:9411/api/v2/spans}}] org.springframework.web.HttpLogging      : HTTP POST http://localhost:9411/api/v2/spans
+2020-11-09 14:15:46.882 DEBUG [OwnerService,,,] 10016 --- [AsyncReporter{RestTemplateSender{http://localhost:9411/api/v2/spans}}] org.springframework.web.HttpLogging      : Accept=[text/plain, application/json, application/*+json, */*]
+2020-11-09 14:15:46.882 DEBUG [OwnerService,,,] 10016 --- [AsyncReporter{RestTemplateSender{http://localhost:9411/api/v2/spans}}] org.springframework.web.HttpLogging      : Writing [[B@4b73f98f] as "application/json"
+2020-11-09 14:15:46.886 DEBUG [OwnerService,,,] 10016 --- [AsyncReporter{RestTemplateSender{http://localhost:9411/api/v2/spans}}] org.springframework.web.HttpLogging      : Response 202 ACCEPTED
+2020-11-09 14:15:46.886 DEBUG [OwnerService,,,] 10016 --- [AsyncReporter{RestTemplateSender{http://localhost:9411/api/v2/spans}}] org.springframework.web.HttpLogging      : Reading to [java.lang.String] as "text/plain;charset=utf-8"
+2020-11-09 14:17:09.828  INFO [OwnerService,,,] 10016 --- [AsyncResolver-bootstrap-executor-0] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2020-11-09 14:22:09.830  INFO [OwnerService,,,] 10016 --- [AsyncResolver-bootstrap-executor-0] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2020-11-09 14:27:09.832  INFO [OwnerService,,,] 10016 --- [AsyncResolver-bootstrap-executor-0] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

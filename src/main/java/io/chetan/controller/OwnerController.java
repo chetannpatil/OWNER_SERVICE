@@ -1,6 +1,5 @@
 package io.chetan.controller;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,14 +18,16 @@ import javax.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -57,8 +58,9 @@ import io.chetan.owner.util.Util;
 import io.chetan.service.OwnerService;
 
 
-@Controller
+//@Controller
 @RequestMapping(value = "/mypg")
+@RestController
 public class OwnerController 
 {
 	@Autowired
@@ -73,27 +75,46 @@ public class OwnerController
 
 	//private HashMap<String, String> uriVariablesMap = new HashMap<String, String>();
 
-//	private static final String pgServiceUri = "http://localhost:8082/pg/";
 
-	private static final String PG_SERVICE_URI = "http://localhost:8082/pg/";
-	private static final String ROOM_SERVICE_URI = "http://localhost:8083/room/";
+//	private static final String PG_SERVICE_URI = "http://localhost:8082/pg/";
+//	private static final String ROOM_SERVICE_URI = "http://localhost:8083/room/";
+//
+//	private static final String INMATE_SERVICE_URI = "http://localhost:8084/inMate/";
+//	//  /bill
+//	private static final String BILL_SERVICE_URI = "http://localhost:8085/bill/";
+//	
+//	private static final String COMPLAINT_SERVICE_URI = "http://localhost:8086/complaint/";
+	
+	
+	
+	private static final String PG_SERVICE_URI = "http://PgService/pg/";
+	
+	//private static final String PG_SERVICE_URI = "http://ZUUL/pg/pg/";
+	
+	//private static final String PG_SERVICE_URI = "http://ZUUL/pg/";
+	
+	//"http://localhost:8085/bill/"
+	//private static final String PG_SERVICE_URI = "http://localhost:2007/pg/pg/";
+	
+	private static final String ROOM_SERVICE_URI = "http://RoomService/room/";
 
-	private static final String INMATE_SERVICE_URI = "http://localhost:8084/inMate/";
+	private static final String INMATE_SERVICE_URI = "http://InMateService/inMate/";
 	//  /bill
-	private static final String BILL_SERVICE_URI = "http://localhost:8085/bill/";
+	private static final String BILL_SERVICE_URI = "http://BillService/bill/";
 	
-	private static final String COMPLAINT_SERVICE_URI = "http://localhost:8086/complaint/";
+	private static final String COMPLAINT_SERVICE_URI = "http://ComplaintService/complaint/";
 	
 	
-	//private static final Logger LOGGER = Logger.getLogger(OwnerController.class.getName());
 	
-	//org.apache.logging.log4j.Logge
 	
 	private static final Logger LOGGER = LogManager.getLogger(OwnerController.class);
 	
 	//private static final String ERROR_PATH = "/error";
 	
 	//private static final String ERROR_PATH = "mypg/error";
+	
+	@Autowired
+	private LoadBalancerClient loadBalancer;
 	
 	/*
 	 * @Override public String getErrorPath() {
@@ -135,13 +156,32 @@ public class OwnerController
 //				Boolean.class,
 //				inMate.getPhoneNumber());
 		
-        Boolean isInMateExist = restTemplate.getForObject(INMATE_SERVICE_URI+"find/"+phoneNumber,
-        		Boolean.class);
+//        Boolean isInMateExist = restTemplate.getForObject(INMATE_SERVICE_URI+"find/phoneNumber"+phoneNumber,
+//        		Boolean.class);
         
+//		Complaint complaint = restTemplate.getForObject(COMPLAINT_SERVICE_URI+"find/{complaintId}",
+//    			Complaint.class, 
+//    			complaintId);
+		
+		String findInMateURL = INMATE_SERVICE_URI+"find/phoneNumber/{phoneNumber}";
+		
+	    Boolean isInMateExist = restTemplate.getForObject(findInMateURL,
+	    		Boolean.class, 
+	    		phoneNumber);
+	    
+        		
+	    
         if(isInMateExist)
+        {
+        	LOGGER.info("\n  OC-isDuplicateInMate - yes phoneNumber \n"+phoneNumber+" exist");
         	return true;
+        }
         else
+        {
+        	LOGGER.info("\n  OC-isDuplicateInMate - NO phoneNumber \n"+phoneNumber+" does not exist");
         	return false;
+        }
+        	
         
 	}
 	//updatecomplaint
@@ -352,9 +392,16 @@ public class OwnerController
 	private Pg loadMyPg(long pgId)
 	{
 		LOGGER.info("\nOC -loadMyPg - wit pgid = \n"+pgId);
-		//long pgId = owner.getMyPg();
-		// PG_SERVICE_URI = http://localhost:8082/pg/
-		// "http://localhost:8080/employee/{id}";
+	
+	    ServiceInstance serviceInstance = loadBalancer.choose("PgService");
+		
+		LOGGER.info("\n OC - loadMyPg - serviceInstance  = \n"+serviceInstance);
+		
+		System.out.println(serviceInstance.getUri());
+		
+		LOGGER.info("\n OC - loadMyPg - serviceInstance.getUri  = \n"+serviceInstance.getUri());
+		
+		
 		Pg pg = restTemplate.getForObject(PG_SERVICE_URI + "findPgById/{pgId}", Pg.class, pgId);
 		
 		return pg;
@@ -476,6 +523,34 @@ public class OwnerController
 		return room ;
 	}
 	
+	@GetMapping("/readComplaint")
+	public Complaint readComplaint() {
+		System.out.println("\n OwnerController readComplaint()");
+		
+		LOGGER.info("\n\n OwnerController - readComplaint \n\n");
+				
+		//return ownerService.findAllOwners();
+		
+		  Complaint complaint = restTemplate.getForObject(COMPLAINT_SERVICE_URI+"read",
+				Complaint.class);
+		
+		return complaint;
+	}
+	
+	
+	@GetMapping("/readOwner")
+	public Iterable<Owner> getOwner()
+	{
+		System.out.println("\n OwnerController getOwner()");
+		
+		LOGGER.info("\n\n OwnerController - getOwner- server.port=2004 \n\n");
+				
+		return ownerService.findAllOwners();
+		
+//		Pg pg = restTemplate.getForObject(PG_SERVICE_URI+"read",
+//				Pg.class);
+		
+	}
 	
 	
 	// private Logger
@@ -489,6 +564,39 @@ public class OwnerController
 		return modelAndView;
 	}
 
+	//springcloud gateway helper
+	@GetMapping("/read")
+	public ModelAndView contact_temp_springcloud_helper()
+	{
+
+        System.out.println("\n\n\n owner_controller - contact_temp with  =   \n\n\n");
+		
+		LOGGER.info("\n\n\n owner_controller - contact_temp with  =   \n\n\n");
+		
+		ModelAndView modelAndView = new ModelAndView();
+		
+		modelAndView.setViewName("Contact");
+
+		//return "I am response";
+
+		return modelAndView;
+	}
+	@GetMapping("/contact")
+	public ModelAndView contact_temp(@RequestHeader("second-request") String header)
+	{
+
+        System.out.println("\n\n\n owner_controller - contact_temp with header =   \n\n\n"+header);
+		
+		LOGGER.info("\n\n\n owner_controller - contact_temp with header =   \n\n\n"+header);
+		
+		ModelAndView modelAndView = new ModelAndView();
+
+		modelAndView.setViewName("Contact");
+
+		return modelAndView;
+
+	}
+	
 	@GetMapping("/contactMe")
 	public ModelAndView contact() {
 
@@ -714,6 +822,22 @@ public class OwnerController
 
 
 //							pg = restTemplate.postForObject("http://localhost:8082/pg/createPg", pg, Pg.class);
+							
+							
+							
+							
+							 ServiceInstance serviceInstance = loadBalancer.choose("PgService");
+								
+								LOGGER.info("\n OC - createpg - serviceInstance  = \n"+serviceInstance);
+								
+								System.out.println(serviceInstance.getUri());
+								
+								LOGGER.info("\n OC - createpg - serviceInstance.getUri  = \n"+serviceInstance.getUri());
+								
+								
+								
+								
+							
 							pg = restTemplate.postForObject(PG_SERVICE_URI+"createPg", pg, Pg.class);
 
 							System.out.println("\n after seting owner to createdPg = \n" + pg);
@@ -2305,15 +2429,7 @@ public class OwnerController
 				System.out.println("\n createInMate  br passed with inmate = \n "+inMate);
 				LOGGER.info("\n createInMate br passed with inmate = \n "+inMate);
 				
-				//no need to add pg to inmate
 				
-				//Pg pg = (Pg)session.getAttribute("pg");
-				//inMate.setMyPg(pg.getPgId());
-				
-				//set rest of the states 
-		          // inMate.setMyRoom(roomId);
-		            //inmat.setMyRoom(roomId);
-		           //set password
 				
 				//check wether phonenumber clashes with owner number of same pg
 				Owner owner = (Owner) session.getAttribute("owner");
